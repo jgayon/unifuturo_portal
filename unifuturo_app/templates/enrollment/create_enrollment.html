@@ -1,0 +1,20 @@
+<h2>Crear Nueva Inscripción</h2>
+
+<form method="POST">
+  <label for="id_oferta">Oferta Académica:</label>
+  <select name="id_oferta" required>
+    {% for oferta in active_offers %}
+      <option value="{{ oferta['ID_OFERTA'] }}">
+        {{ oferta['PERIODO_ACADEMICO'] }} - {{ oferta['PROGRAMA_NOMBRE'] }} ({{ oferta['TITULO_CONDUCE'] }})
+      </option>
+    {% endfor %}
+  </select><br><br>
+
+  <label for="tipo_prospecto">Tipo de Prospecto:</label>
+  <select name="tipo_prospecto" required>
+    <option value="Nuevo">Nuevo</option>
+    <option value="Antiguo">Antiguo</option>
+  </select><br><br>
+
+  <button type="submit">Confirmar Inscripción</button>
+</form>

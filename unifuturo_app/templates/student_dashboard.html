@@ -9,7 +9,9 @@
     <div class="dashboard-buttons">
         <a href="{{ url_for('create_enrollment') }}" class="btn btn-dashboard">Hacer Nueva Inscripción</a>
         <a href="{{ url_for('student_view_enrollments') }}" class="btn btn-dashboard">Revisar Estado de Inscripciones</a>
-        <a href="#" class="btn btn-dashboard">Editar Información de Perfil (Pendiente)</a>
+        <a href="{{ url_for('student_edit_profile') }}"class="btn btn-dashboard"> Editar Información de Perfil </a>
     </div>
 </div>
 {% endblock %}
+
+

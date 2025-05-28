@@ -123,6 +123,59 @@ def student_dashboard():
         return redirect(url_for('index'))
     return render_template('student_dashboard.html', user_name=session['user_name'])
 
+@app.route('/student/edit_profile', methods=['GET', 'POST'])
+def student_edit_profile():
+    if 'user_id' not in session or session['user_type'] != 'Cliente':
+        flash('Acceso no autorizado.', 'danger')
+        return redirect(url_for('index'))
+
+    user_id = session['user_id']
+
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        apellido = request.form['apellido']
+        telefono = request.form['telefono']
+        direccion = request.form['direccion']
+        correo = request.form['correo']
+
+        update_query = '''
+        UPDATE "Usuario"
+        SET nombre = :nombre,
+            apellido = :apellido,
+            telefono = :telefono,
+            direccion = :direccion,
+            correo = :correo
+        WHERE id_usuario = :user_id
+        '''
+        params = {
+            'nombre': nombre,
+            'apellido': apellido,
+            'telefono': telefono,
+            'direccion': direccion,
+            'correo': correo,
+            'user_id': user_id
+        }
+
+        success = execute_query(update_query, params, commit=True)
+
+        if success:
+            flash('Tu información ha sido actualizada correctamente.', 'success')
+            session['user_name'] = nombre  # Actualiza en la sesión
+            return redirect(url_for('student_dashboard'))
+        else:
+            flash('Hubo un error al actualizar tu información.', 'danger')
+
+    # GET: cargar datos actuales del usuario
+    query = 'SELECT nombre, apellido, telefono, direccion, correo FROM "Usuario" WHERE id_usuario = :user_id'
+    user_data = execute_query(query, {'user_id': user_id}, fetchone=True)
+
+    if user_data is None:
+        flash('Error al cargar tus datos.', 'danger')
+        return redirect(url_for('student_dashboard'))
+
+    return render_template('student/edit_profile.html', user_data=user_data)
+
+
 @app.route('/admin_dashboard')
 def admin_dashboard():
     if 'user_id' not in session or session['user_type'] != 'Administrador':
@@ -140,6 +193,8 @@ def create_enrollment():
         'SELECT id_oferta, periodo_academico, titulo_conduce, P.nombre AS programa_nombre FROM "Oferta" O JOIN "Programa" P ON O.id_programa = P.id_programa WHERE activa = \'S\' ORDER BY periodo_academico DESC',
         fetchall=True
     )
+    print("Ofertas recibidas desde BD:")
+    print(active_offers)
     if active_offers is None:
         flash('Error al cargar las ofertas académicas.', 'danger')
         active_offers = []
