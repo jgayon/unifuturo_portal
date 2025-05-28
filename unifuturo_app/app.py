@@ -70,7 +70,8 @@ def register():
             flash('Error al verificar si el usuario ya existe.', 'danger')
             return render_template('register.html', form_data=request.form)
 
-        existing_user_count = list(result.values())[0]
+        #existing_user_count = list(result.values())[0]
+        existing_user_count = result['COUNT(*)'] if result else 0
 
         if existing_user_count > 0:
             flash('El correo o número de documento ya está registrado.', 'danger')
@@ -125,6 +126,10 @@ def student_dashboard():
 
 @app.route('/student/edit_profile', methods=['GET', 'POST'])
 def student_edit_profile():
+    columns = ['nombre', 'apellido', 'telefono', 'direccion', 'correo']
+    if user_data is not None:
+        user_data = dict(zip(columns, user_data))
+
     if 'user_id' not in session or session['user_type'] != 'Cliente':
         flash('Acceso no autorizado.', 'danger')
         return redirect(url_for('index'))
@@ -183,64 +188,66 @@ def admin_dashboard():
         return redirect(url_for('index'))
     return render_template('admin_dashboard.html', user_name=session['user_name'])
 
-@app.route('/student/create_enrollment', methods=['GET', 'POST'])
+@app.route('/create_enrollment', methods=['GET', 'POST'])
 def create_enrollment():
-    if 'user_id' not in session or session['user_type'] != 'Cliente':
-        flash('Acceso no autorizado.', 'danger')
-        return redirect(url_for('index'))
+    if 'user_id' not in session:
+        return redirect('/login')
 
-    active_offers = execute_query(
-        'SELECT id_oferta, periodo_academico, titulo_conduce, P.nombre AS programa_nombre FROM "Oferta" O JOIN "Programa" P ON O.id_programa = P.id_programa WHERE activa = \'S\' ORDER BY periodo_academico DESC',
-        fetchall=True
-    )
-    print("Ofertas recibidas desde BD:")
-    print(active_offers)
-    if active_offers is None:
-        flash('Error al cargar las ofertas académicas.', 'danger')
-        active_offers = []
+    user_id = session['user_id']
+
+    # Cargar las ofertas activas desde la BD
+    query_ofertas = 'SELECT id_oferta, periodo_academico, titulo_conduce FROM "Oferta" WHERE activa = \'S\''
+    ofertas = execute_query(query_ofertas, fetchall=True)
 
     if request.method == 'POST':
-        id_oferta = request.form['id_oferta']
-        tipo_prospecto = request.form['tipo_prospecto']
+        oferta_id = request.form.get('oferta_id')
+        tipo_prospecto = request.form.get('tipo_prospecto')
 
-        selected_offer = execute_query('SELECT id_oferta FROM "Oferta" WHERE id_oferta = :id_oferta AND activa = \'S\'', {'id_oferta': id_oferta}, fetchone=True)
-        if not selected_offer:
-            flash('La oferta seleccionada no es válida o no está activa.', 'danger')
-            return render_template('enrollment/create_enrollment.html', active_offers=active_offers)
+        # Validaciones básicas
+        if not oferta_id or not tipo_prospecto:
+            flash('Todos los campos son obligatorios.', 'danger')
+            return render_template('create_enrollment.html', ofertas=ofertas)
 
-        check_inscription_query = """
-        SELECT COUNT(*)
-        FROM "Inscripcion" I
-        JOIN "Oferta" O ON I.id_oferta = O.id_oferta
-        WHERE I.id_usuario = :user_id 
-        AND O.id_oferta = :id_oferta
+        # Verificar si el usuario ya tiene inscripción para esa oferta
+        check_query = """
+            SELECT COUNT(*) AS cantidad
+            FROM "Inscripcion"
+            WHERE id_usuario = :id_usuario AND id_oferta = :id_oferta
         """
-        result = execute_query(check_inscription_query, {'user_id': session['user_id'], 'id_oferta': id_oferta}, fetchone=True)
-        existing_inscription_count = result[0] if result else 0
+        check_params = {'id_usuario': user_id, 'id_oferta': oferta_id}
+        result = execute_query(check_query, check_params, fetchone=True)
+
+        existing_inscription_count = result['CANTIDAD'] if result else 0
 
         if existing_inscription_count > 0:
-            flash('Ya tienes una inscripción activa para esta oferta académica.', 'warning')
-            return render_template('enrollment/create_enrollment.html', active_offers=active_offers)
+            flash('Ya tienes una inscripción para esta oferta.', 'warning')
+            return render_template('create_enrollment.html', ofertas=ofertas)
 
+        # Crear nueva inscripción
         insert_query = """
-        INSERT INTO "Inscripcion" (id_usuario, id_oferta, tipo_prospecto, fecha_inscripcion, estado_inscripcion)
-        VALUES (:id_usuario, :id_oferta, :tipo_prospecto, SYSDATE, 'En progreso')
+            INSERT INTO "Inscripcion" (
+                id_usuario, id_oferta, tipo_prospecto, fecha_inscripcion, estado_inscripcion
+            ) VALUES (
+                :id_usuario, :id_oferta, :tipo_prospecto, SYSDATE, 'En progreso'
+            )
         """
-        params = {
-            'id_usuario': session['user_id'],
-            'id_oferta': id_oferta,
+        insert_params = {
+            'id_usuario': user_id,
+            'id_oferta': oferta_id,
             'tipo_prospecto': tipo_prospecto
         }
 
-        success = execute_query(insert_query, params, commit=True)
+        print("Insertando inscripción con:", insert_params)
 
-        if success:
-            flash('Tu inscripción ha sido creada exitosamente.', 'success')
-            return redirect(url_for('student_view_enrollments'))
+        success = execute_query(insert_query, insert_params, commit=True)
+
+        if success is not None:
+            flash('Inscripción realizada exitosamente.', 'success')
+            return redirect('/student_dashboard')
         else:
-            flash('Error al crear la inscripción.', 'danger')
+            flash('Ocurrió un error al guardar la inscripción.', 'danger')
 
-    return render_template('enrollment/create_enrollment.html', active_offers=active_offers)
+    return render_template('create_enrollment.html', ofertas=ofertas)
 
 @app.route('/student/view_enrollments')
 def student_view_enrollments():
@@ -302,6 +309,111 @@ def admin_review_enrollments():
         all_enrollments = []
 
     return render_template('admin_review_enrollments.html', all_enrollments=all_enrollments)
+
+@app.route('/admin/create_offer', methods=['GET', 'POST'])
+def admin_create_offer():
+    if 'user_id' not in session or session['user_type'] != 'Administrador':
+        flash('Acceso no autorizado.', 'danger')
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        id_programa = request.form['id_programa']
+        periodo_academico = request.form['periodo_academico']
+        titulo_conduce = request.form['titulo_conduce']
+        activa = request.form['activa']
+
+        insert_query = '''
+        INSERT INTO "Oferta" (id_programa, periodo_academico, titulo_conduce, activa)
+        VALUES (:id_programa, :periodo_academico, :titulo_conduce, :activa)
+        '''
+        params = {
+            'id_programa': id_programa,
+            'periodo_academico': periodo_academico,
+            'titulo_conduce': titulo_conduce,
+            'activa': activa
+        }
+
+        success = execute_query(insert_query, params, commit=True)
+
+        if success:
+            flash('Oferta académica creada exitosamente.', 'success')
+            return redirect(url_for('admin_dashboard'))
+        else:
+            flash('Error al crear la oferta académica.', 'danger')
+
+    programas = execute_query('SELECT id_programa, nombre FROM "Programa"', fetchall=True)
+    return render_template('admin/create_offer.html', programas=programas)
+
+@app.route('/admin/manage_offers', methods=['GET'])
+def manage_offers():
+    if 'user_id' not in session or session.get('user_type') != 'Administrador':
+        flash('Acceso no autorizado.', 'danger')
+        return redirect(url_for('index'))
+
+    query = '''
+        SELECT o.id_oferta, p.nombre AS nombre_programa, o.periodo_academico,
+               o.titulo_conduce, o.costo_inscripcion, o.costo_programa,
+               o.descripcion_oferta, o.activa
+        FROM "Oferta" o
+        JOIN "Programa" p ON o.id_programa = p.id_programa
+        ORDER BY o.id_oferta
+    '''
+    offers = execute_query(query, fetchall=True)
+    return render_template('admin/manage_offers.html', offers=offers)
+
+@app.route('/admin/edit_offer/<int:offer_id>', methods=['POST'])
+def edit_offer(offer_id):
+    if 'user_id' not in session or session.get('user_type') != 'Administrador':
+        flash('Acceso no autorizado.', 'danger')
+        return redirect(url_for('index'))
+
+    periodo = request.form.get('periodo_academico')
+    titulo = request.form.get('titulo_conduce')
+    inscripcion = request.form.get('costo_inscripcion')
+    programa = request.form.get('costo_programa')
+    descripcion = request.form.get('descripcion_oferta')
+    activa = request.form.get('activa')
+
+    query = '''
+        UPDATE "Oferta"
+        SET periodo_academico = :periodo, titulo_conduce = :titulo,
+            costo_inscripcion = :inscripcion, costo_programa = :programa,
+            descripcion_oferta = :descripcion, activa = :activa
+        WHERE id_oferta = :offer_id
+    '''
+    params = {
+        'periodo': periodo,
+        'titulo': titulo,
+        'inscripcion': inscripcion,
+        'programa': programa,
+        'descripcion': descripcion,
+        'activa': activa,
+        'offer_id': offer_id
+    }
+
+    success = execute_query(query, params, commit=True)
+    if success:
+        flash('Oferta actualizada correctamente.', 'success')
+    else:
+        flash('Hubo un error al actualizar la oferta.', 'danger')
+
+    return redirect(url_for('manage_offers'))
+@app.route('/admin/delete_offer/<int:offer_id>', methods=['POST'])
+def delete_offer(offer_id):
+    if 'user_id' not in session or session.get('user_type') != 'Administrador':
+        flash('Acceso no autorizado.', 'danger')
+        return redirect(url_for('index'))
+
+    query = 'DELETE FROM "Oferta" WHERE id_oferta = :offer_id'
+    success = execute_query(query, {'offer_id': offer_id}, commit=True)
+
+    if success:
+        flash('Oferta eliminada correctamente.', 'success')
+    else:
+        flash('Error al eliminar la oferta.', 'danger')
+
+    return redirect(url_for('manage_offers'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

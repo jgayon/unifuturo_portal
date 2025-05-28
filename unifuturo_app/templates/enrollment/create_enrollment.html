@@ -4,9 +4,10 @@
   <label for="id_oferta">Oferta Académica:</label>
   <select name="id_oferta" required>
     {% for oferta in active_offers %}
-      <option value="{{ oferta['ID_OFERTA'] }}">
-        {{ oferta['PERIODO_ACADEMICO'] }} - {{ oferta['PROGRAMA_NOMBRE'] }} ({{ oferta['TITULO_CONDUCE'] }})
-      </option>
+      <option value="{{ oferta.ID_OFERTA }}">
+        {{ oferta.TITULO_CONDUCE }} ({{ oferta.PROGRAMA_NOMBRE }}) - {{ oferta.PERIODO_ACADEMICO }}
+        </option>
+
     {% endfor %}
   </select><br><br>
 

@@ -2,19 +2,20 @@
 
 <form method="POST">
   <label>Nombre:</label>
-  <input type="text" name="nombre" value="{{ user_data['NOMBRE'] }}" required><br>
+  <input type="text" name="nombre" value="{{ user_data['nombre'] }}" required><br>
 
   <label>Apellido:</label>
-  <input type="text" name="apellido" value="{{ user_data['APELLIDO'] }}" required><br>
+  <input type="text" name="apellido" value="{{ user_data['apellido'] }}" required><br>
 
   <label>Teléfono:</label>
-  <input type="text" name="telefono" value="{{ user_data['TELEFONO'] }}"><br>
+  <input type="text" name="telefono" value="{{ user_data['telefono'] }}"><br>
 
   <label>Dirección:</label>
-  <input type="text" name="direccion" value="{{ user_data['DIRECCION'] }}"><br>
+  <input type="text" name="direccion" value="{{ user_data['direccion'] }}"><br>
 
   <label>Correo:</label>
-  <input type="email" name="correo" value="{{ user_data['CORREO'] }}" required><br>
+  <input type="email" name="correo" value="{{ user_data['correo'] }}" required><br>
 
   <button type="submit">Guardar Cambios</button>
 </form>
+

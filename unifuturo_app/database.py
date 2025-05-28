@@ -24,37 +24,40 @@ def get_db_connection():
     print("DSN:", cx_Oracle.makedsn(Config.ORACLE_DB_HOST, Config.ORACLE_DB_PORT, service_name=Config.ORACLE_DB_SERVICE_NAME))
 
 
-def execute_query(query, params=None, fetchone=False, fetchall=False, commit=False):
-    conn = None
-    cursor = None
+def execute_query(query, params=None, fetchone=False, fetchall=False):
     try:
         conn = get_db_connection()
-        if conn:
-            cursor = conn.cursor()
-            # Si params es None, usar un diccionario vacío para execute, que es lo que espera cx_Oracle
-            cursor.execute(query, params if params is not None else {}) 
-            
-            if commit:
-                conn.commit()
-                return True
-            
-            if fetchone:
-                row = cursor.fetchone()
-                if row is None:
-                    return None
+        cursor = conn.cursor()
+        cursor.execute(query, params or {})
+
+        if fetchone:
+            row = cursor.fetchone()
+            if row:
                 columns = [col[0] for col in cursor.description]
                 return dict(zip(columns, row))
+            return None
 
-            elif fetchall:
+        if fetchall:
+            rows = cursor.fetchall()
+            if rows:
                 columns = [col[0] for col in cursor.description]
-                return [dict(zip(columns, row)) for row in cursor.fetchall()]
-            
-            return None 
-    except cx_Oracle.Error as e:
-        import traceback
-        traceback.print_exc()
-        error_obj, = e.args
-        print(f"Error al ejecutar la consulta: {error_obj.message} - Query: {query}")
+                return [dict(zip(columns, row)) for row in rows]
+            return []
+
+        conn.commit()
+        return True
+
+    except cx_Oracle.DatabaseError as e:
+        error, = e.args
+        print(f"Error al ejecutar la consulta: {error.message}\nHelp: {error.context}\n - Query: {query}")
+        return None
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
 
 if __name__ == '__main__':
     conn = get_db_connection()
