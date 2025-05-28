@@ -1,0 +1,43 @@
+{% extends 'layout.html' %}
+
+{% block title %}Revisar Inscripciones{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <h2>Revisar Inscripciones</h2>
+    {% if all_enrollments %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID Inscripción</th>
+                    <th>Prospecto</th>
+                    <th>Programa</th>
+                    <th>Periodo</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for enrollment in all_enrollments %}
+                <tr>
+                    <td>{{ enrollment.ID_INSCRIPCION }}</td>
+                    <td>{{ enrollment.NOMBRE_PROSPECTO }}</td>
+                    <td>{{ enrollment.PROGRAMA_NOMBRE }}</td>
+                    <td>{{ enrollment.PERIODO_ACADEMICO }}</td>
+                    <td>{{ enrollment.TIPO_PROSPECTO }}</td>
+                    <td>{{ enrollment.ESTADO_INSCRIPCION }}</td>
+                    <td>
+                        {# Aquí el admin podría tener botones para 'Aprobar Documentos', 'Aprobar Homologación', 'Cambiar Estado', etc. #}
+                        <a href="#" class="btn btn-small">Detalles / Aprobar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay inscripciones para revisar en este momento.</p>
+    {% endif %}
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary mt-3">Volver al Dashboard</a>
+</div>
+{% endblock %}

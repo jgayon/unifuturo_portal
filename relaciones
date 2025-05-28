@@ -1,0 +1,152 @@
+
+Entidades:
+
+
+
+Usuario:
+
+id_ ususario PK int
+
+nombre char
+
+apellido char
+
+telefono int
+
+direccion varchar
+
+tipo_documento char
+
+num_documento int
+
+fecha_de_nacimiento Date
+
+correo varchar
+
+contraseña varchar
+
+tipo_usuario varchar
+
+
+
+Inscripcion:
+
+id_inscripcion PK int
+
+semestre int
+
+periodo int
+
+estado varchar
+
+id_documento FK
+
+id_oferta FK
+
+id_pago FK
+
+
+
+Oferta:
+
+id_oferta PK int
+
+titulo varchar
+
+periodo Date
+
+costo int
+
+id_programa FK
+
+id_requisitos FK
+
+
+
+Requisitos:
+
+id_requisitos PK int
+
+nombre_doc varchar
+
+
+
+Programa:
+
+id_programa PK int
+
+nombre varchar
+
+num_semestres int
+
+descripcion varchar
+
+id_asignatura FK
+
+
+
+Asignaturas:
+
+Id_asignatura PK int
+
+nombre varchar
+
+semestre int
+
+descripcion varchar
+
+
+
+Documentos:
+
+id_documento PK int
+
+nombre_doc varchar
+
+archivo
+
+
+
+Homologacion:
+
+id_solicitud FK
+
+id_asignatura FK
+
+estado varhcar
+
+justificacion varchar
+
+
+
+Pago:
+
+id_solicitud FK
+
+estado varchar
+
+fecha  date
+
+
+
+Relaciones:
+
+Usuario ||--o{ Inscripcion : "realiza"
+
+Oferta ||--o{ Inscripcion : "Contiene"
+
+Programa ||--o{ Oferta : "Se Ofrece"
+
+Programa ||--o{ Asignaturas : "Contiene"
+
+Inscripcion ||--o{ Homologacion : "Puede tener"
+
+Inscripcion ||--o{ Pago : "Realiza"
+
+Oferta ||--o{ Requiscitos :"Tiene"
+
+Inscripcion ||--o{ Documentos : "Se anexan"
+
+
+
+

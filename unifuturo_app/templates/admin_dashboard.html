@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+
+{% block title %}Dashboard Administrador{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h2>Panel de Administrador</h2>
+    <p>Aquí puedes gestionar la oferta académica y las inscripciones.</p>
+    <div class="dashboard-buttons">
+        <a href="{{ url_for('admin_manage_academic_offer') }}" class="btn btn-dashboard">Gestionar Oferta Académica (Pendiente)</a>
+        <a href="{{ url_for('admin_review_enrollments') }}" class="btn btn-dashboard">Revisar Inscripciones y Documentos</a>
+        <a href="#" class="btn btn-dashboard">Editar Requisitos (Pendiente)</a>
+        <a href="#" class="btn btn-dashboard">Editar Programas Académicos (Pendiente)</a>
+        <a href="#" class="btn btn-dashboard">Editar Asignaturas (Pendiente)</a>
+    </div>
+</div>
+{% endblock %}

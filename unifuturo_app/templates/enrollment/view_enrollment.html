@@ -1,0 +1,45 @@
+{% extends 'layout.html' %}
+
+{% block title %}Mis Inscripciones{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <h2>Mis Inscripciones</h2>
+    {% if enrollments %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID Inscripción</th>
+                    <th>Tipo Prospecto</th>
+                    <th>Programa</th>
+                    <th>Título</th>
+                    <th>Periodo</th>
+                    <th>Fecha Inscripción</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for enrollment in enrollments %}
+                <tr>
+                    <td>{{ enrollment.ID_INSCRIPCION }}</td>
+                    <td>{{ enrollment.TIPO_PROSPECTO }}</td>
+                    <td>{{ enrollment.PROGRAMA_NOMBRE }}</td>
+                    <td>{{ enrollment.TITULO_CONDUCE }}</td>
+                    <td>{{ enrollment.PERIODO_ACADEMICO }}</td>
+                    <td>{{ enrollment.FECHA_INSCRIPCION.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ enrollment.ESTADO_INSCRIPCION }}</td>
+                    <td>
+                        {# Aquí puedes añadir botones de acción como 'Ver Detalles', 'Pagar', 'Subir Documentos', etc. #}
+                        <a href="#" class="btn btn-small">Ver Detalles</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aún no tienes inscripciones registradas.</p>
+    {% endif %}
+    <a href="{{ url_for('student_dashboard') }}" class="btn btn-secondary mt-3">Volver al Dashboard</a>
+</div>
+{% endblock %}

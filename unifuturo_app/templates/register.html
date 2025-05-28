@@ -1,0 +1,86 @@
+{% extends 'layout.html' %}
+
+{% block title %}Crear Nuevo Usuario{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h2>Crear Cuenta en UNIFUTURO</h2>
+    <form action="{{ url_for('register') }}" method="POST">
+        <div class="form-group">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" required>
+        </div>
+        <div class="form-group">
+            <label for="apellido">Apellido:</label>
+            <input type="text" id="apellido" name="apellido" required>
+        </div>
+        <div class="form-group">
+            <label for="telefono">Teléfono:</label>
+            <input type="text" id="telefono" name="telefono">
+        </div>
+        <div class="form-group">
+            <label for="direccion">Dirección:</label>
+            <input type="text" id="direccion" name="direccion">
+        </div>
+        <div class="form-group">
+            <label for="tipo_documento">Tipo de Documento:</label>
+            <select id="tipo_documento" name="tipo_documento" required>
+                <option value="">Selecciona</option>
+                <option value="CC">Cédula de Ciudadanía</option>
+                <option value="TI">Tarjeta de Identidad</option>
+                <option value="CE">Cédula de Extranjería</option>
+                <option value="PA">Pasaporte</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="num_documento">Número de Documento:</label>
+            <input type="text" id="num_documento" name="num_documento" required>
+        </div>
+        <div class="form-group">
+            <label for="fecha_nacimiento">Fecha de Nacimiento:</label>
+            <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required>
+        </div>
+        <div class="form-group">
+            <label for="correo">Correo Electrónico:</label>
+            <input type="email" id="correo" name="correo" required>
+        </div>
+        <div class="form-group">
+            <label for="username">Nombre de Usuario:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="contrasena">Contraseña:</label>
+            <input type="password" id="contrasena" name="contrasena" required>
+        </div>
+        <div class="form-group">
+            <label for="tipo_usuario">Tipo de Usuario:</label>
+            <select id="tipo_usuario" name="tipo_usuario" onchange="toggleAdminCode()" required>
+                <option value="Cliente">Estudiante</option>
+                <option value="Administrador">Docente/Administrador</option>
+            </select>
+        </div>
+        <div class="form-group" id="admin_code_group" style="display: none;">
+            <label for="admin_code">Código de Autorización de Administrador:</label>
+            <input type="text" id="admin_code" name="admin_code">
+        </div>
+        <button type="submit" class="btn btn-primary">Crear Cuenta</button>
+    </form>
+    <p>¿Ya tienes una cuenta? <a href="{{ url_for('index') }}">Iniciar Sesión.</a></p>
+</div>
+
+<script>
+    function toggleAdminCode() {
+        var userType = document.getElementById('tipo_usuario').value;
+        var adminCodeGroup = document.getElementById('admin_code_group');
+        if (userType === 'Administrador') {
+            adminCodeGroup.style.display = 'block';
+            adminCodeGroup.querySelector('input').setAttribute('required', 'required');
+        } else {
+            adminCodeGroup.style.display = 'none';
+            adminCodeGroup.querySelector('input').removeAttribute('required');
+        }
+    }
+    // Ejecutar al cargar la página para establecer el estado inicial
+    document.addEventListener('DOMContentLoaded', toggleAdminCode);
+</script>
+{% endblock %}

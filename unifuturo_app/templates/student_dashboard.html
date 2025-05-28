@@ -1,0 +1,15 @@
+{% extends 'layout.html' %}
+
+{% block title %}Dashboard Estudiante{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h2>Panel de Estudiante</h2>
+    <p>Aquí puedes gestionar tus inscripciones y tu perfil.</p>
+    <div class="dashboard-buttons">
+        <a href="{{ url_for('create_enrollment') }}" class="btn btn-dashboard">Hacer Nueva Inscripción</a>
+        <a href="{{ url_for('student_view_enrollments') }}" class="btn btn-dashboard">Revisar Estado de Inscripciones</a>
+        <a href="#" class="btn btn-dashboard">Editar Información de Perfil (Pendiente)</a>
+    </div>
+</div>
+{% endblock %}
