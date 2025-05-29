@@ -12,3 +12,5 @@ ofertas = execute_query(
 print("Ofertas activas encontradas:")
 for o in ofertas:
     print(o)
+
+print("DEBUG - Ofertas:", ofertas)

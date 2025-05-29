@@ -1,5 +1,6 @@
 -- 0. Conéctate como SYSDBA y ejecuta esto:
---    sqlplus / as sysdba
+
+sqlplus / as sysdba
 --    @setup_unifuturo.sql
 
 -- 1. Cambiar al contenedor pluggable database (PDB)

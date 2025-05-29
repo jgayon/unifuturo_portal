@@ -60,86 +60,86 @@ INSERT INTO "Oferta" (id_programa, periodo_academico, titulo_conduce, costo_insc
 -- Inserción de datos en la tabla OFERTA_REQUISITO (Tabla de Unión)
 -- Requisitos para la oferta de Ingeniería de Sistemas 2025-10
 INSERT INTO "Oferta_Requisito" (id_oferta, id_requisito) VALUES
-((SELECT id_oferta FROM "Oferta" WHERE periodo_academico = '2025-10' AND id_programa = (SELECT id_programa FROM Programa WHERE nombre = 'Ingeniería de Sistemas')), (SELECT id_requisito FROM Requisitos WHERE nombre_doc = 'Copia Documento de Identidad'));
+((SELECT id_oferta FROM "Oferta" WHERE periodo_academico = '2025-10' AND id_programa = (SELECT id_programa FROM "Programa" WHERE nombre = 'Ingeniería de Sistemas')), (SELECT id_requisito FROM "Requisitos" WHERE nombre_doc = 'Copia Documento de Identidad'));
 INSERT INTO "Oferta_Requisito" (id_oferta, id_requisito) VALUES
-((SELECT id_oferta FROM "Oferta" WHERE periodo_academico = '2025-10' AND id_programa = (SELECT id_programa FROM Programa WHERE nombre = 'Ingeniería de Sistemas')), (SELECT id_requisito FROM Requisitos WHERE nombre_doc = 'Certificado de Notas de Bachiller'));
+((SELECT id_oferta FROM "Oferta" WHERE periodo_academico = '2025-10' AND id_programa = (SELECT id_programa FROM "Programa" WHERE nombre = 'Ingeniería de Sistemas')), (SELECT id_requisito FROM "Requisitos" WHERE nombre_doc = 'Certificado de Notas de Bachiller'));
 INSERT INTO "Oferta_Requisito" (id_oferta, id_requisito) VALUES
-((SELECT id_oferta FROM "Oferta" WHERE periodo_academico = '2025-10' AND id_programa = (SELECT id_programa FROM Programa WHERE nombre = 'Ingeniería de Sistemas')), (SELECT id_requisito FROM Requisitos WHERE nombre_doc = 'Diploma de Bachiller'));
+((SELECT id_oferta FROM "Oferta" WHERE periodo_academico = '2025-10' AND id_programa = (SELECT id_programa FROM "Programa" WHERE nombre = 'Ingeniería de Sistemas')), (SELECT id_requisito FROM "Requisitos" WHERE nombre_doc = 'Diploma de Bachiller'));
 INSERT INTO "Oferta_Requisito" (id_oferta, id_requisito) VALUES
-((SELECT id_oferta FROM "Oferta" WHERE periodo_academico = '2025-10' AND id_programa = (SELECT id_programa FROM Programa WHERE nombre = 'Ingeniería de Sistemas')), (SELECT id_requisito FROM Requisitos WHERE nombre_doc = 'Foto Tipo Documento'));
+((SELECT id_oferta FROM "Oferta" WHERE periodo_academico = '2025-10' AND id_programa = (SELECT id_programa FROM "Programa" WHERE nombre = 'Ingeniería de Sistemas')), (SELECT id_requisito FROM "Requisitos" WHERE nombre_doc = 'Foto Tipo Documento'));
 
 
 -- Requisitos para la oferta de Derecho 2025-10
 INSERT INTO "Oferta_Requisito" (id_oferta, id_requisito) VALUES
-((SELECT id_oferta FROM "Oferta" WHERE periodo_academico = '2025-10' AND id_programa = (SELECT id_programa FROM Programa WHERE nombre = 'Derecho')), (SELECT id_requisito FROM Requisitos WHERE nombre_doc = 'Copia Documento de Identidad'));
+((SELECT id_oferta FROM "Oferta" WHERE periodo_academico = '2025-10' AND id_programa = (SELECT id_programa FROM "Programa" WHERE nombre = 'Derecho')), (SELECT id_requisito FROM "Requisitos" WHERE nombre_doc = 'Copia Documento de Identidad'));
 INSERT INTO "Oferta_Requisito" (id_oferta, id_requisito) VALUES
-((SELECT id_oferta FROM "Oferta" WHERE periodo_academico = '2025-10' AND id_programa = (SELECT id_programa FROM Programa WHERE nombre = 'Derecho')), (SELECT id_requisito FROM Requisitos WHERE nombre_doc = 'Diploma de Bachiller'));
+((SELECT id_oferta FROM "Oferta" WHERE periodo_academico = '2025-10' AND id_programa = (SELECT id_programa FROM "Programa" WHERE nombre = 'Derecho')), (SELECT id_requisito FROM "Requisitos" WHERE nombre_doc = 'Diploma de Bachiller'));
 
 
 -- Inserción de datos en la tabla PROGRAMA_ASIGNATURA (Tabla de Unión)
 -- Asignaturas para Ingeniería de Sistemas
 INSERT INTO "Programa_Asignatura" (id_programa, id_asignatura, semestre_en_programa) VALUES
-((SELECT id_programa FROM "Programa" WHERE nombre = 'Ingeniería de Sistemas'), (SELECT id_asignatura FROM Asignaturas WHERE nombre = 'Introducción a la Programación'), 1);
+((SELECT id_programa FROM "Programa" WHERE nombre = 'Ingeniería de Sistemas'), (SELECT id_asignatura FROM "Asignaturas" WHERE nombre = 'Introducción a la Programación'), 1);
 INSERT INTO "Programa_Asignatura" (id_programa, id_asignatura, semestre_en_programa) VALUES
-((SELECT id_programa FROM "Programa" WHERE nombre = 'Ingeniería de Sistemas'), (SELECT id_asignatura FROM Asignaturas WHERE nombre = 'Cálculo Diferencial'), 1);
+((SELECT id_programa FROM "Programa" WHERE nombre = 'Ingeniería de Sistemas'), (SELECT id_asignatura FROM "Asignaturas" WHERE nombre = 'Cálculo Diferencial'), 1);
 INSERT INTO "Programa_Asignatura" (id_programa, id_asignatura, semestre_en_programa) VALUES
-((SELECT id_programa FROM "Programa" WHERE nombre = 'Ingeniería de Sistemas'), (SELECT id_asignatura FROM Asignaturas WHERE nombre = 'Bases de Datos I'), 2);
+((SELECT id_programa FROM "Programa" WHERE nombre = 'Ingeniería de Sistemas'), (SELECT id_asignatura FROM "Asignaturas" WHERE nombre = 'Bases de Datos I'), 2);
 INSERT INTO "Programa_Asignatura" (id_programa, id_asignatura, semestre_en_programa) VALUES
-((SELECT id_programa FROM "Programa" WHERE nombre = 'Ingeniería de Sistemas'), (SELECT id_asignatura FROM Asignaturas WHERE nombre = 'Algoritmos y Estructuras de Datos'), 2);
+((SELECT id_programa FROM "Programa" WHERE nombre = 'Ingeniería de Sistemas'), (SELECT id_asignatura FROM "Asignaturas" WHERE nombre = 'Algoritmos y Estructuras de Datos'), 2);
 
 -- Asignaturas para Derecho
 INSERT INTO "Programa_Asignatura" (id_programa, id_asignatura, semestre_en_programa) VALUES
-((SELECT id_programa FROM "Programa" WHERE nombre = 'Derecho'), (SELECT id_asignatura FROM Asignaturas WHERE nombre = 'Derecho Romano'), 1);
+((SELECT id_programa FROM "Programa" WHERE nombre = 'Derecho'), (SELECT id_asignatura FROM "Asignaturas" WHERE nombre = 'Derecho Romano'), 1);
 INSERT INTO "Programa_Asignatura" (id_programa, id_asignatura, semestre_en_programa) VALUES
-((SELECT id_programa FROM "Programa" WHERE nombre = 'Derecho'), (SELECT id_asignatura FROM Asignaturas WHERE nombre = 'Introducción a la Sociología'), 1);
+((SELECT id_programa FROM "Programa" WHERE nombre = 'Derecho'), (SELECT id_asignatura FROM "Asignaturas" WHERE nombre = 'Introducción a la Sociología'), 1);
 
 
 -- Inserción de datos en la tabla INSCRIPCION
 -- Inscripción de Juan Perez (Nuevo) a Ingeniería de Sistemas 2025-10
 INSERT INTO "Inscripcion" (id_usuario, id_oferta, tipo_prospecto, fecha_inscripcion, estado_inscripcion) VALUES
-((SELECT id_usuario FROM "Usuario" WHERE correo = 'juan.perez@example.com'), (SELECT id_oferta FROM Oferta WHERE periodo_academico = '2025-10' AND id_programa = (SELECT id_programa FROM Programa WHERE nombre = 'Ingeniería de Sistemas')), 'Nuevo', SYSDATE, 'En progreso');
+((SELECT id_usuario FROM "Usuario" WHERE correo = 'juan.perez@example.com'), (SELECT id_oferta FROM "Oferta" WHERE periodo_academico = '2025-10' AND id_programa = (SELECT id_programa FROM "Programa" WHERE nombre = 'Ingeniería de Sistemas')), 'Nuevo', SYSDATE, 'En progreso');
 
 -- Inscripción de Ana Diaz (Transferencia externa) a Derecho 2025-10
 INSERT INTO "Inscripcion" (id_usuario, id_oferta, tipo_prospecto, fecha_inscripcion, estado_inscripcion) VALUES
-((SELECT id_usuario FROM "Usuario" WHERE correo = 'ana.diaz@transfer.com'), (SELECT id_oferta FROM Oferta WHERE periodo_academico = '2025-10' AND id_programa = (SELECT id_programa FROM Programa WHERE nombre = 'Derecho')), 'Transferencia externa', SYSDATE, 'Homologacion Pendiente');
+((SELECT id_usuario FROM "Usuario" WHERE correo = 'ana.diaz@transfer.com'), (SELECT id_oferta FROM "Oferta" WHERE periodo_academico = '2025-10' AND id_programa = (SELECT id_programa FROM "Programa" WHERE nombre = 'Derecho')), 'Transferencia externa', SYSDATE, 'Homologacion Pendiente');
 
 -- Inscripción de Maria Gomez (Nuevo) a Derecho 2025-10
 INSERT INTO "Inscripcion" (id_usuario, id_oferta, tipo_prospecto, fecha_inscripcion, estado_inscripcion) VALUES
-((SELECT id_usuario FROM "Usuario" WHERE correo = 'maria.gomez@example.com'), (SELECT id_oferta FROM Oferta WHERE periodo_academico = '2025-10' AND id_programa = (SELECT id_programa FROM Programa WHERE nombre = 'Derecho')), 'Nuevo', SYSDATE, 'Pagado');
+((SELECT id_usuario FROM "Usuario" WHERE correo = 'maria.gomez@example.com'), (SELECT id_oferta FROM "Oferta" WHERE periodo_academico = '2025-10' AND id_programa = (SELECT id_programa FROM "Programa" WHERE nombre = 'Derecho')), 'Nuevo', SYSDATE, 'Pagado');
 
 
 -- Inserción de datos en la tabla PAGO
 -- Pago de Juan Perez para su inscripción (id_inscripcion 1)
 INSERT INTO "Pago" (id_inscripcion, monto_pago, fecha_pago, estado_pago, referencia_pago) VALUES
-((SELECT id_inscripcion FROM "Inscripcion" WHERE id_usuario = (SELECT id_usuario FROM Usuario WHERE correo = 'juan.perez@example.com') AND tipo_prospecto = 'Nuevo'), 150000.00, SYSDATE, 'Aprobado', 'PAGO_IS_202510_JP001');
+((SELECT id_inscripcion FROM "Inscripcion" WHERE id_usuario = (SELECT id_usuario FROM "Usuario" WHERE correo = 'juan.perez@example.com') AND tipo_prospecto = 'Nuevo'), 150000.00, SYSDATE, 'Aprobado', 'PAGO_IS_202510_JP001');
 
 -- Pago de Maria Gomez para su inscripción (id_inscripcion 3)
-INSERT INTO Pago (id_inscripcion, monto_pago, fecha_pago, estado_pago, referencia_pago) VALUES
-((SELECT id_inscripcion FROM Inscripcion WHERE id_usuario = (SELECT id_usuario FROM Usuario WHERE correo = 'maria.gomez@example.com') AND tipo_prospecto = 'Nuevo'), 120000.00, SYSDATE, 'Aprobado', 'PAGO_D_202510_MG001');
+INSERT INTO "Pago" (id_inscripcion, monto_pago, fecha_pago, estado_pago, referencia_pago) VALUES
+((SELECT id_inscripcion FROM "Inscripcion" WHERE id_usuario = (SELECT id_usuario FROM "Usuario" WHERE correo = 'maria.gomez@example.com') AND tipo_prospecto = 'Nuevo'), 120000.00, SYSDATE, 'Aprobado', 'PAGO_D_202510_MG001');
 
 
 -- Inserción de datos en la tabla DOCUMENTOS
 -- Documentos de Juan Perez (Inscripcion 1)
-INSERT INTO Documentos (id_inscripcion, id_requisito, nombre_archivo, ruta_archivo, tipo_mime, fecha_subida, estado_documento) VALUES
-((SELECT id_inscripcion FROM Inscripcion WHERE id_usuario = (SELECT id_usuario FROM Usuario WHERE correo = 'juan.perez@example.com')), (SELECT id_requisito FROM Requisitos WHERE nombre_doc = 'Copia Documento de Identidad'), 'dni_juan_perez.pdf', '/docs/juan/dni_juan_perez.pdf', 'application/pdf', SYSDATE, 'Aprobado');
-INSERT INTO Documentos (id_inscripcion, id_requisito, nombre_archivo, ruta_archivo, tipo_mime, fecha_subida, estado_documento) VALUES
-((SELECT id_inscripcion FROM Inscripcion WHERE id_usuario = (SELECT id_usuario FROM Usuario WHERE correo = 'juan.perez@example.com')), (SELECT id_requisito FROM Requisitos WHERE nombre_doc = 'Certificado de Notas de Bachiller'), 'notas_juan_perez.pdf', '/docs/juan/notas_juan_perez.pdf', 'application/pdf', SYSDATE, 'Pendiente');
-INSERT INTO Documentos (id_inscripcion, id_requisito, nombre_archivo, ruta_archivo, tipo_mime, fecha_subida, estado_documento) VALUES
-((SELECT id_inscripcion FROM Inscripcion WHERE id_usuario = (SELECT id_usuario FROM Usuario WHERE correo = 'juan.perez@example.com')), (SELECT id_requisito FROM Requisitos WHERE nombre_doc = 'Recibo de Pago de Inscripción'), 'recibo_juan_perez.pdf', '/docs/juan/recibo_juan_perez.pdf', 'application/pdf', SYSDATE, 'Aprobado');
+INSERT INTO "Documentos" (id_inscripcion, id_requisito, nombre_archivo, ruta_archivo, tipo_mime, fecha_subida, estado_documento) VALUES
+((SELECT id_inscripcion FROM "Inscripcion" WHERE id_usuario = (SELECT id_usuario FROM "Usuario" WHERE correo = 'juan.perez@example.com')), (SELECT id_requisito FROM "Requisitos" WHERE nombre_doc = 'Copia Documento de Identidad'), 'dni_juan_perez.pdf', '/docs/juan/dni_juan_perez.pdf', 'application/pdf', SYSDATE, 'Aprobado');
+INSERT INTO "Documentos" (id_inscripcion, id_requisito, nombre_archivo, ruta_archivo, tipo_mime, fecha_subida, estado_documento) VALUES
+((SELECT id_inscripcion FROM "Inscripcion" WHERE id_usuario = (SELECT id_usuario FROM "Usuario" WHERE correo = 'juan.perez@example.com')), (SELECT id_requisito FROM "Requisitos" WHERE nombre_doc = 'Certificado de Notas de Bachiller'), 'notas_juan_perez.pdf', '/docs/juan/notas_juan_perez.pdf', 'application/pdf', SYSDATE, 'Pendiente');
+INSERT INTO "Documentos" (id_inscripcion, id_requisito, nombre_archivo, ruta_archivo, tipo_mime, fecha_subida, estado_documento) VALUES
+((SELECT id_inscripcion FROM "Inscripcion" WHERE id_usuario = (SELECT id_usuario FROM "Usuario" WHERE correo = 'juan.perez@example.com')), (SELECT id_requisito FROM "Requisitos" WHERE nombre_doc = 'Recibo de Pago de Inscripción'), 'recibo_juan_perez.pdf', '/docs/juan/recibo_juan_perez.pdf', 'application/pdf', SYSDATE, 'Aprobado');
 
 
 -- Documentos de Ana Diaz (Inscripcion 2)
-INSERT INTO Documentos (id_inscripcion, id_requisito, nombre_archivo, ruta_archivo, tipo_mime, fecha_subida, estado_documento) VALUES
-((SELECT id_inscripcion FROM Inscripcion WHERE id_usuario = (SELECT id_usuario FROM Usuario WHERE correo = 'ana.diaz@transfer.com')), (SELECT id_requisito FROM Requisitos WHERE nombre_doc = 'Copia Documento de Identidad'), 'dni_ana_diaz.pdf', '/docs/ana/dni_ana_diaz.pdf', 'application/pdf', SYSDATE, 'Aprobado');
+INSERT INTO "Documentos" (id_inscripcion, id_requisito, nombre_archivo, ruta_archivo, tipo_mime, fecha_subida, estado_documento) VALUES
+((SELECT id_inscripcion FROM "Inscripcion" WHERE id_usuario = (SELECT id_usuario FROM "Usuario" WHERE correo = 'ana.diaz@transfer.com')), (SELECT id_requisito FROM "Requisitos" WHERE nombre_doc = 'Copia Documento de Identidad'), 'dni_ana_diaz.pdf', '/docs/ana/dni_ana_diaz.pdf', 'application/pdf', SYSDATE, 'Aprobado');
 
 
 -- Inserción de datos en la tabla HOMOLOGACION
 -- Solicitud de homologación de Ana Diaz (Inscripcion 2)
-INSERT INTO Homologacion (id_inscripcion, id_asignatura_programa, nombre_asignatura_externa, justificacion, estado_homologacion) VALUES
-((SELECT id_inscripcion FROM Inscripcion WHERE id_usuario = (SELECT id_usuario FROM Usuario WHERE correo = 'ana.diaz@transfer.com')), (SELECT id_asignatura FROM Asignaturas WHERE nombre = 'Derecho Romano'), 'Historia del Derecho I', 'Misma temática y contenidos cubiertos en la universidad anterior.', 'Pendiente');
+INSERT INTO "Homologacion" (id_inscripcion, id_asignatura_programa, nombre_asignatura_externa, justificacion, estado_homologacion) VALUES
+((SELECT id_inscripcion FROM "Inscripcion" WHERE id_usuario = (SELECT id_usuario FROM "Usuario" WHERE correo = 'ana.diaz@transfer.com')), (SELECT id_asignatura FROM "Asignaturas" WHERE nombre = 'Derecho Romano'), 'Historia del Derecho I', 'Misma temática y contenidos cubiertos en la universidad anterior.', 'Pendiente');
 
-INSERT INTO Homologacion (id_inscripcion, id_asignatura_programa, nombre_asignatura_externa, justificacion, estado_homologacion) VALUES
-((SELECT id_inscripcion FROM Inscripcion WHERE id_usuario = (SELECT id_usuario FROM Usuario WHERE correo = 'ana.diaz@transfer.com')), (SELECT id_asignatura FROM Asignaturas WHERE nombre = 'Introducción a la Sociología'), 'Sociología General', 'Curso equivalente con excelente rendimiento académico.', 'Aprobada');
+INSERT INTO "Homologacion" (id_inscripcion, id_asignatura_programa, nombre_asignatura_externa, justificacion, estado_homologacion) VALUES
+((SELECT id_inscripcion FROM "Inscripcion" WHERE id_usuario = (SELECT id_usuario FROM "Usuario" WHERE correo = 'ana.diaz@transfer.com')), (SELECT id_asignatura FROM "Asignaturas" WHERE nombre = 'Introducción a la Sociología'), 'Sociología General', 'Curso equivalente con excelente rendimiento académico.', 'Aprobada');
 
 
 -- Confirmar la transacción

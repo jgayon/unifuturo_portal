@@ -1,0 +1,13 @@
+<!-- manage_subjects.html -->
+<h2>Gestión de Asignaturas</h2>
+<ul>
+  {% for asig in asignaturas %}
+    <li>{{ asig.NOMBRE }} (Semestre {{ asig.SEMESTRE }})
+      <form method="POST" style="display:inline">
+        <input type="hidden" name="id_asignatura" value="{{ asig.ID_ASIGNATURA }}">
+        <button name="action" value="Editar">Editar</button>
+        <button name="action" value="Eliminar">Eliminar</button>
+      </form>
+    </li>
+  {% endfor %}
+</ul>

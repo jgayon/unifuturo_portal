@@ -1,0 +1,13 @@
+<!-- review_enrollments.html -->
+<h2>Revisión de Inscripciones</h2>
+<table>
+  <tr><th>Estudiante</th><th>Programa</th><th>Periodo</th><th>Estado</th></tr>
+  {% for ins in all_enrollments %}
+    <tr>
+      <td>{{ ins.NOMBRE_USUARIO }}</td>
+      <td>{{ ins.NOMBRE_PROGRAMA }}</td>
+      <td>{{ ins.PERIODO_ACADEMICO }}</td>
+      <td>{{ ins.ESTADO_INSCRIPCION }}</td>
+    </tr>
+  {% endfor %}
+</table>

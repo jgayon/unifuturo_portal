@@ -117,6 +117,8 @@ def logout():
     flash('Has cerrado sesión.', 'info')
     return redirect(url_for('index'))
 
+# --- Student Side ----
+
 @app.route('/student_dashboard')
 def student_dashboard():
     if 'user_id' not in session or session['user_type'] != 'Cliente':
@@ -180,13 +182,6 @@ def student_edit_profile():
 
     return render_template('student/edit_profile.html', user_data=user_data)
 
-
-@app.route('/admin_dashboard')
-def admin_dashboard():
-    if 'user_id' not in session or session['user_type'] != 'Administrador':
-        flash('Acceso no autorizado.', 'danger')
-        return redirect(url_for('index'))
-    return render_template('admin_dashboard.html', user_name=session['user_name'])
 
 @app.route('/create_enrollment', methods=['GET', 'POST'])
 def create_enrollment():
@@ -278,6 +273,16 @@ def student_view_enrollments():
 
     return render_template('enrollment/view_enrollments.html', enrollments=enrollments)
 
+#--- ADMIN SIDE ---
+
+@app.route('/admin_dashboard')
+def admin_dashboard():
+    if 'user_id' not in session or session['user_type'] != 'Administrador':
+        flash('Acceso no autorizado.', 'danger')
+        return redirect(url_for('index'))
+    return render_template('admin_dashboard.html', user_name=session['user_name'])
+
+#Manejar oferta academica
 @app.route('/admin/manage_academic_offer')
 def admin_manage_academic_offer():
     if 'user_id' not in session or session['user_type'] != 'Administrador':
@@ -286,30 +291,91 @@ def admin_manage_academic_offer():
     flash('Sección para gestión de oferta académica.', 'info')
     return render_template('admin_basic_action.html', title="Gestionar Oferta Académica")
 
+#Manejar requisitos
+@app.route('/admin/manage_requirements', methods=['GET', 'POST'])
+def manage_requirements():
+    if 'user_id' not in session or session['user_type'] != 'Administrador':
+        flash('Acceso no autorizado.', 'danger')
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        action = request.form['action']
+        req_id = request.form['id_requisito']
+
+        if action == 'Editar':
+            nuevo_nombre = request.form['nombre']
+            update_query = '''
+                UPDATE "Requisitos"
+                SET nombre = :nombre
+                WHERE id_requisito = :id_requisito
+            '''
+            execute_query(update_query, {'nombre': nuevo_nombre, 'id_requisito': req_id}, commit=True)
+            flash('Requisito actualizado.', 'success')
+        elif action == 'Eliminar':
+            delete_query = 'DELETE FROM "Requisitos" WHERE id_requisito = :id_requisito'
+            execute_query(delete_query, {'id_requisito': req_id}, commit=True)
+            flash('Requisito eliminado.', 'info')
+
+    requisitos = execute_query('SELECT * FROM "Requisitos"', fetchall=True)
+    if requisitos is None:
+        requisitos = []
+    return render_template('admin/manage_requirements.html', requisitos=requisitos)
+
+#Revisar Programa
+@app.route('/admin/manage_programs')
+def manage_programs():
+    if 'user_id' not in session or session['user_type'] != 'Administrador':
+        return redirect(url_for('index'))
+
+    programas = execute_query('SELECT * FROM "Programa"', fetchall=True)
+    return render_template('admin/manage_programs.html', programas=programas)
+
+#Revisar Asignaturas
+@app.route('/admin/manage_subjects')
+def manage_subjects():
+    if 'user_id' not in session or session['user_type'] != 'Administrador':
+        return redirect(url_for('index'))
+
+    asignaturas = execute_query('SELECT * FROM "Asignaturas"', fetchall=True)
+    return render_template('admin/manage_subjects.html', asignaturas=asignaturas)
+
+#Revisar Inscripciones
 @app.route('/admin/review_enrollments')
 def admin_review_enrollments():
     if 'user_id' not in session or session['user_type'] != 'Administrador':
         flash('Acceso no autorizado.', 'danger')
         return redirect(url_for('index'))
 
-    all_enrollments = execute_query("""
-        SELECT 
-            I.id_inscripcion, U.nombre || ' ' || U.apellido AS nombre_prospecto,
-            O.periodo_academico, P.nombre AS programa_nombre, I.estado_inscripcion, I.tipo_prospecto
-        FROM 
-            "Inscripcion" I
-        JOIN "Usuario" U ON I.id_usuario = U.id_usuario
-        JOIN "Oferta" O ON I.id_oferta = O.id_oferta
-        JOIN "Programa" P ON O.id_programa = P.id_programa
-        ORDER BY I.fecha_inscripcion DESC
-    """, fetchall=True)
+    query = '''
+        SELECT i.id_inscripcion, u.nombre, u.apellido, o.periodo_academico, p.nombre AS programa, i.estado_inscripcion
+        FROM "Inscripcion" i
+        JOIN "Usuario" u ON i.id_usuario = u.id_usuario
+        JOIN "Oferta" o ON i.id_oferta = o.id_oferta
+        JOIN "Programa" p ON o.id_programa = p.id_programa
+    '''
 
-    if all_enrollments is None:
-        flash('Error al cargar las inscripciones.', 'danger')
-        all_enrollments = []
+    all_enrollments = execute_query(query, fetchall=True)
+    return render_template('admin/review_enrollments.html', all_enrollments=all_enrollments)
 
-    return render_template('admin_review_enrollments.html', all_enrollments=all_enrollments)
+#Revisar documentos
+@app.route('/admin/review_documents')
+def admin_review_documents():
+    if 'user_id' not in session or session['user_type'] != 'Administrador':
+        flash('Acceso no autorizado.', 'danger')
+        return redirect(url_for('index'))
 
+    query = '''
+        SELECT d.id_documento, u.nombre, u.apellido, r.nombre_doc, d.estado_documento
+        FROM "Documentos" d
+        JOIN "Inscripcion" i ON d.id_inscripcion = i.id_inscripcion
+        JOIN "Usuario" u ON i.id_usuario = u.id_usuario
+        JOIN "Requisito" r ON d.id_requisito = r.id_requisito
+    '''
+
+    all_documents = execute_query(query, fetchall=True)
+    return render_template('admin/review_documents.html', all_documents=all_documents)
+
+# Crear oferta académica
 @app.route('/admin/create_offer', methods=['GET', 'POST'])
 def admin_create_offer():
     if 'user_id' not in session or session['user_type'] != 'Administrador':
@@ -318,102 +384,71 @@ def admin_create_offer():
 
     if request.method == 'POST':
         id_programa = request.form['id_programa']
-        periodo_academico = request.form['periodo_academico']
+        periodo = request.form['periodo_academico']
         titulo_conduce = request.form['titulo_conduce']
-        activa = request.form['activa']
+        activa = request.form.get('activa', 'N')
 
         insert_query = '''
-        INSERT INTO "Oferta" (id_programa, periodo_academico, titulo_conduce, activa)
-        VALUES (:id_programa, :periodo_academico, :titulo_conduce, :activa)
+            INSERT INTO "Oferta" (id_programa, periodo_academico, titulo_conduce, activa)
+            VALUES (:id_programa, :periodo_academico, :titulo_conduce, :activa)
         '''
         params = {
             'id_programa': id_programa,
-            'periodo_academico': periodo_academico,
+            'periodo_academico': periodo,
             'titulo_conduce': titulo_conduce,
             'activa': activa
         }
 
         success = execute_query(insert_query, params, commit=True)
-
         if success:
-            flash('Oferta académica creada exitosamente.', 'success')
-            return redirect(url_for('admin_dashboard'))
+            flash('Oferta creada exitosamente.', 'success')
         else:
-            flash('Error al crear la oferta académica.', 'danger')
+            flash('Hubo un error al crear la oferta.', 'danger')
 
     programas = execute_query('SELECT id_programa, nombre FROM "Programa"', fetchall=True)
     return render_template('admin/create_offer.html', programas=programas)
 
-@app.route('/admin/manage_offers', methods=['GET'])
-def manage_offers():
-    if 'user_id' not in session or session.get('user_type') != 'Administrador':
+# Gestionar todas las ofertas: ver, editar, eliminar
+@app.route('/admin/manage_offers', methods=['GET', 'POST'])
+def admin_manage_offers():
+    if 'user_id' not in session or session['user_type'] != 'Administrador':
         flash('Acceso no autorizado.', 'danger')
         return redirect(url_for('index'))
 
-    query = '''
-        SELECT o.id_oferta, p.nombre AS nombre_programa, o.periodo_academico,
-               o.titulo_conduce, o.costo_inscripcion, o.costo_programa,
-               o.descripcion_oferta, o.activa
-        FROM "Oferta" o
-        JOIN "Programa" p ON o.id_programa = p.id_programa
-        ORDER BY o.id_oferta
-    '''
-    offers = execute_query(query, fetchall=True)
-    return render_template('admin/manage_offers.html', offers=offers)
+    if request.method == 'POST':
+        action = request.form['action']
+        oferta_id = request.form['id_oferta']
 
-@app.route('/admin/edit_offer/<int:offer_id>', methods=['POST'])
-def edit_offer(offer_id):
-    if 'user_id' not in session or session.get('user_type') != 'Administrador':
-        flash('Acceso no autorizado.', 'danger')
-        return redirect(url_for('index'))
+        if action == 'Editar':
+            titulo = request.form['titulo_conduce']
+            periodo = request.form['periodo_academico']
+            activa = request.form['activa']
 
-    periodo = request.form.get('periodo_academico')
-    titulo = request.form.get('titulo_conduce')
-    inscripcion = request.form.get('costo_inscripcion')
-    programa = request.form.get('costo_programa')
-    descripcion = request.form.get('descripcion_oferta')
-    activa = request.form.get('activa')
+            update_query = '''
+                UPDATE "Oferta"
+                SET titulo_conduce = :titulo_conduce,
+                    periodo_academico = :periodo_academico,
+                    activa = :activa
+                WHERE id_oferta = :id_oferta
+            '''
+            execute_query(update_query, {
+                'titulo_conduce': titulo,
+                'periodo_academico': periodo,
+                'activa': activa,
+                'id_oferta': oferta_id
+            }, commit=True)
+            flash('Oferta actualizada.', 'success')
 
-    query = '''
-        UPDATE "Oferta"
-        SET periodo_academico = :periodo, titulo_conduce = :titulo,
-            costo_inscripcion = :inscripcion, costo_programa = :programa,
-            descripcion_oferta = :descripcion, activa = :activa
-        WHERE id_oferta = :offer_id
-    '''
-    params = {
-        'periodo': periodo,
-        'titulo': titulo,
-        'inscripcion': inscripcion,
-        'programa': programa,
-        'descripcion': descripcion,
-        'activa': activa,
-        'offer_id': offer_id
-    }
+        elif action == 'Eliminar':
+            delete_query = 'DELETE FROM "Oferta" WHERE id_oferta = :id_oferta'
+            execute_query(delete_query, {'id_oferta': oferta_id}, commit=True)
+            flash('Oferta eliminada.', 'info')
 
-    success = execute_query(query, params, commit=True)
-    if success:
-        flash('Oferta actualizada correctamente.', 'success')
-    else:
-        flash('Hubo un error al actualizar la oferta.', 'danger')
-
-    return redirect(url_for('manage_offers'))
-@app.route('/admin/delete_offer/<int:offer_id>', methods=['POST'])
-def delete_offer(offer_id):
-    if 'user_id' not in session or session.get('user_type') != 'Administrador':
-        flash('Acceso no autorizado.', 'danger')
-        return redirect(url_for('index'))
-
-    query = 'DELETE FROM "Oferta" WHERE id_oferta = :offer_id'
-    success = execute_query(query, {'offer_id': offer_id}, commit=True)
-
-    if success:
-        flash('Oferta eliminada correctamente.', 'success')
-    else:
-        flash('Error al eliminar la oferta.', 'danger')
-
-    return redirect(url_for('manage_offers'))
+    ofertas = execute_query('SELECT * FROM "Oferta"', fetchall=True)
+    return render_template('admin/manage_offers.html', ofertas=ofertas)
 
 
+
+#Run
 if __name__ == '__main__':
     app.run(debug=True)

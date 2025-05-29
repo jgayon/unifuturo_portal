@@ -1,0 +1,13 @@
+<!-- manage_programs.html -->
+<h2>Gestión de Programas Académicos</h2>
+<ul>
+  {% for prog in programas %}
+    <li>{{ prog.NOMBRE }} - {{ prog.NUM_SEMESTRES }} semestres
+      <form method="POST" style="display:inline">
+        <input type="hidden" name="id_programa" value="{{ prog.ID_PROGRAMA }}">
+        <button name="action" value="Editar">Editar</button>
+        <button name="action" value="Eliminar">Eliminar</button>
+      </form>
+    </li>
+  {% endfor %}
+</ul>

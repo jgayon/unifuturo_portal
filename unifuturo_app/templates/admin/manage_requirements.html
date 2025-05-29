@@ -1,0 +1,51 @@
+<!-- templates/admin/manage_requirements.html -->
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Editar Requisitos</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <table class="table table-bordered mt-4">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre del Documento</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in requisitos %}
+            <tr>
+                <form method="POST" action="{{ url_for('manage_requirements', id=req.ID_REQUISITO) }}">
+                    <td>{{ req.ID_REQUISITO }}</td>
+                    <td>
+                        <input type="text" name="nombre_doc" class="form-control" value="{{ req.NOMBRE_DOC }}">
+                    </td>
+                    <td>
+                        <button type="submit" class="btn btn-success btn-sm">Guardar</button>
+                        <a href="{{ url_for('manage_requirements', id=req.ID_REQUISITO) }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro que deseas eliminar este requisito?');">Eliminar</a>
+                    </td>
+                </form>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+    <h4>Agregar nuevo requisito</h4>
+    <form method="POST" action="{{ url_for('manage_requirements') }}">
+        <div class="form-group">
+            <label for="nombre_doc">Nombre del Documento</label>
+            <input type="text" name="nombre_doc" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary mt-2">Agregar</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+<!-- review_documents.html -->
+<h2>Revisión de Documentos</h2>
+<table>
+  <tr><th>Estudiante</th><th>Documento</th><th>Estado</th><th>Acción</th></tr>
+  {% for doc in documentos %}
+    <tr>
+      <td>{{ doc.CORREO }}</td>
+      <td>{{ doc.NOMBRE_ARCHIVO }}</td>
+      <td>{{ doc.ESTADO_DOCUMENTO }}</td>
+      <td>
+        <form method="POST">
+          <input type="hidden" name="id_documento" value="{{ doc.ID_DOCUMENTO }}">
+          <select name="nuevo_estado">
+            <option value="Aprobado">Aprobado</option>
+            <option value="Pendiente">Pendiente</option>
+            <option value="Rechazado">Rechazado</option>
+          </select>
+          <button type="submit">Actualizar</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+</table>
