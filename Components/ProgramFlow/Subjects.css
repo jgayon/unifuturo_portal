@@ -1,0 +1,24 @@
+.subjects-page {
+  padding: 40px;
+  text-align: center;
+}
+.semesters {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 30px;
+}
+.semester {
+  background: #f0f0f0;
+  padding: 25px;
+  border-radius: 10px;
+  width: 250px;
+}
+.semester h3 {
+  color: #212EA0;
+}
+.semester ul {
+  margin-top: 10px;
+  text-align: left;
+  padding-left: 15px;
+}
