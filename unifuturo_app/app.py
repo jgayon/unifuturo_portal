@@ -128,15 +128,13 @@ def student_dashboard():
 
 @app.route('/student/edit_profile', methods=['GET', 'POST'])
 def student_edit_profile():
-    columns = ['nombre', 'apellido', 'telefono', 'direccion', 'correo']
-    if user_data is not None:
-        user_data = dict(zip(columns, user_data))
-
     if 'user_id' not in session or session['user_type'] != 'Cliente':
         flash('Acceso no autorizado.', 'danger')
         return redirect(url_for('index'))
 
     user_id = session['user_id']
+    columns = ['nombre', 'apellido', 'telefono', 'direccion', 'correo']
+    user_data = None
 
     if request.method == 'POST':
         nombre = request.form['nombre']
@@ -172,15 +170,17 @@ def student_edit_profile():
         else:
             flash('Hubo un error al actualizar tu información.', 'danger')
 
-    # GET: cargar datos actuales del usuario
-    query = 'SELECT nombre, apellido, telefono, direccion, correo FROM "Usuario" WHERE id_usuario = :user_id'
-    user_data = execute_query(query, {'user_id': user_id}, fetchone=True)
+    # Siempre cargamos los datos actuales del usuario para mostrarlos en el formulario
+    user_data = execute_query('SELECT nombre, apellido, telefono, direccion, correo FROM "Usuario" WHERE id_usuario = :id', {'id': user_id}, fetchone=True)
 
     if user_data is None:
         flash('Error al cargar tus datos.', 'danger')
         return redirect(url_for('student_dashboard'))
 
+    user_data = dict(zip(columns, user_data))
+
     return render_template('student/edit_profile.html', user_data=user_data)
+
 
 
 @app.route('/create_enrollment', methods=['GET', 'POST'])
@@ -201,7 +201,7 @@ def create_enrollment():
         # Validaciones básicas
         if not oferta_id or not tipo_prospecto:
             flash('Todos los campos son obligatorios.', 'danger')
-            return render_template('create_enrollment.html', ofertas=ofertas)
+            return render_template('enrollment/create_enrollment.html', ofertas=ofertas)
 
         # Verificar si el usuario ya tiene inscripción para esa oferta
         check_query = """
@@ -216,7 +216,7 @@ def create_enrollment():
 
         if existing_inscription_count > 0:
             flash('Ya tienes una inscripción para esta oferta.', 'warning')
-            return render_template('create_enrollment.html', ofertas=ofertas)
+            return render_template('enrollment/create_enrollment.html', ofertas=ofertas)
 
         # Crear nueva inscripción
         insert_query = """
@@ -242,7 +242,7 @@ def create_enrollment():
         else:
             flash('Ocurrió un error al guardar la inscripción.', 'danger')
 
-    return render_template('create_enrollment.html', ofertas=ofertas)
+    return render_template('enrollment/create_enrollment.html', ofertas=ofertas)
 
 @app.route('/student/view_enrollments')
 def student_view_enrollments():
@@ -271,7 +271,7 @@ def student_view_enrollments():
         flash('Error al cargar tus inscripciones.', 'danger')
         enrollments = []
 
-    return render_template('enrollment/view_enrollments.html', enrollments=enrollments)
+    return render_template('enrollment/view_enrollment.html', enrollments=enrollments)
 
 #--- ADMIN SIDE ---
 
