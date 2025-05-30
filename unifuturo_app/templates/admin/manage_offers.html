@@ -1,67 +1,62 @@
+{% extends 'layout.html' %}
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Gestionar Ofertas Académicas</title>
-</head>
-<body>
-    <h1>Gestionar Ofertas Académicas</h1>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <ul>
-        {% for category, message in messages %}
-          <li class="{{ category }}">{{ message }}</li>
-        {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
+{% block title %}Gestionar Ofertas Académicas{% endblock %}
 
-    <table border="1">
-    <thead>
-        <tr>
-            <th>Programa</th>
-            <th>Periodo Académico</th>
-            <th>Título</th>
-            <th>Inscripción</th>
-            <th>Costo</th>
-            <th>Descripción</th>
-            <th>Activa</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for oferta in ofertas %}
-        <tr>
-            <form action="{{ url_for('admin_manage_offers') }}" method="post">
-                <input type="hidden" name="action" value="Editar">
-                <input type="hidden" name="id_oferta" value="{{ oferta['ID_OFERTA'] }}">
-                <td>{{ oferta.PROGRAMA_NOMBRE }}</td>
-                <td><input type="text" name="periodo_academico" value="{{ oferta[PERIODO_ACADEMICO] }}"></td>
-                <td><input type="text" name="titulo_conduce" value="{{ oferta[TITULO_CONDUCE] }}"></td>
-                <td><input type="number" name="costo_inscripcion" value="{{ oferta[COSTO_INSCRIPCION] }}"></td>
-                <td><input type="number" name="costo_programa" value="{{ oferta[COSTO_PROGRAMA] }}"></td>
-                <td><input type="text" name="descripcion_oferta" value="{{ oferta[DESCRIPCION_OFERTA] }}"></td>
-                <td>
-                    <select name="activa">
-                        <option value="S" {% if oferta.ACTIVA == 'S' %}selected{% endif %}>Sí</option>
-                        <option value="N" {% if oferta.ACTIVA == 'N' %}selected{% endif %}>No</option>
-                    </select>
-                </td>
-                <td>
-                    <button type="submit">Guardar</button>
-            </form>
-            <form action="{{ url_for('admin_manage_offers') }}" method="post" style="display:inline;">
-                <input type="hidden" name="action" value="Eliminar">
-                <input type="hidden" name="id_oferta" value="{{ oferta[ID_OFERTA] }}">
-                <button type="submit" onclick="return confirm('¿Estás seguro de eliminar esta oferta?');">Eliminar</button>
-            </form>
-                </td>
-        </tr>
+{% block content %}
+<h1>Gestionar Ofertas Académicas</h1>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul>
+    {% for category, message in messages %}
+      <li class="{{ category }}">{{ message }}</li>
     {% endfor %}
-    </tbody>
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<table border="1">
+<thead>
+    <tr>
+        <th>Programa</th>
+        <th>Periodo Académico</th>
+        <th>Título</th>
+        <th>Inscripción</th>
+        <th>Costo</th>
+        <th>Descripción</th>
+        <th>Activa</th>
+        <th>Acciones</th>
+    </tr>
+</thead>
+<tbody>
+{% for oferta in ofertas %}
+    <tr>
+        <form action="{{ url_for('admin_manage_offers') }}" method="post">
+            <input type="hidden" name="action" value="Editar">
+            <input type="hidden" name="id_oferta" value="{{ oferta['ID_OFERTA'] }}">
+            <td>{{ oferta['PROGRAMA_NOMBRE'] }}</td>
+            <td><input type="text" name="periodo_academico" value="{{ oferta['PERIODO_ACADEMICO'] }}"></td>
+            <td><input type="text" name="titulo_conduce" value="{{ oferta['TITULO_CONDUCE'] }}"></td>
+            <td><input type="number" name="costo_inscripcion" step="0.01" value="{{ oferta['COSTO_INSCRIPCION'] }}"></td>
+            <td><input type="number" name="costo_programa" step="0.01" value="{{ oferta['COSTO_PROGRAMA'] }}"></td>
+            <td><input type="text" name="descripcion_oferta" value="{{ oferta['DESCRIPCION_OFERTA'] }}"></td>
+            <td>
+                <select name="activa">
+                    <option value="S" {% if oferta['ACTIVA'] == 'S' %}selected{% endif %}>Sí</option>
+                    <option value="N" {% if oferta['ACTIVA'] == 'N' %}selected{% endif %}>No</option>
+                </select>
+            </td>
+            <td>
+                <button type="submit">Guardar</button>
+        </form>
+        <form action="{{ url_for('admin_manage_offers') }}" method="post" style="display:inline;">
+            <input type="hidden" name="action" value="Eliminar">
+            <input type="hidden" name="id_oferta" value="{{ oferta['ID_OFERTA'] }}">
+            <button type="submit" onclick="return confirm('¿Estás seguro de eliminar esta oferta?');">Eliminar</button>
+        </form>
+            </td>
+    </tr>
+{% endfor %}
+</tbody>
 </table>
-</body>
-</html>
-
-
+{% endblock %}

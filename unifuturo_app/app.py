@@ -422,31 +422,47 @@ def admin_manage_offers():
         oferta_id = request.form['id_oferta']
 
         if action == 'Editar':
-            titulo = request.form['titulo_conduce']
-            periodo = request.form['periodo_academico']
-            activa = request.form['activa']
+            try:
+                titulo = request.form['titulo_conduce']
+                periodo = request.form['periodo_academico']
+                costo_inscripcion = float(request.form['costo_inscripcion'].replace(',', '.'))
+                costo_programa = float(request.form['costo_programa'].replace(',', '.'))
+                descripcion = request.form['descripcion_oferta']
+                activa = request.form['activa']
 
-            update_query = '''
-                UPDATE "Oferta"
-                SET titulo_conduce = :titulo_conduce,
-                    periodo_academico = :periodo_academico,
-                    activa = :activa
-                WHERE id_oferta = :id_oferta
-            '''
-            execute_query(update_query, {
-                'titulo_conduce': titulo,
-                'periodo_academico': periodo,
-                'activa': activa,
-                'id_oferta': oferta_id
-            }, commit=True)
-            flash('Oferta actualizada.', 'success')
-
+                update_query = '''
+                    UPDATE "Oferta"
+                    SET titulo_conduce = :titulo_conduce,
+                        periodo_academico = :periodo_academico,
+                        costo_inscripcion = :costo_inscripcion,
+                        costo_programa = :costo_programa,
+                        descripcion_oferta = :descripcion_oferta,
+                        activa = :activa
+                    WHERE id_oferta = :id_oferta
+                '''
+                execute_query(update_query, {
+                    'titulo_conduce': titulo,
+                    'periodo_academico': periodo,
+                    'costo_inscripcion': costo_inscripcion,
+                    'costo_programa': costo_programa,
+                    'descripcion_oferta': descripcion,
+                    'activa': activa,
+                    'id_oferta': oferta_id
+                })
+                flash('Oferta actualizada.', 'success')
+            except ValueError:
+                flash('Los campos de costo deben ser números válidos.', 'danger')
+        
         elif action == 'Eliminar':
             delete_query = 'DELETE FROM "Oferta" WHERE id_oferta = :id_oferta'
-            execute_query(delete_query, {'id_oferta': oferta_id}, commit=True)
+            execute_query(delete_query, {'id_oferta': oferta_id})
             flash('Oferta eliminada.', 'info')
 
-    ofertas = execute_query('SELECT * FROM "Oferta"', fetchall=True)
+    ofertas = execute_query('''
+    SELECT o.*, p.nombre AS PROGRAMA_NOMBRE
+    FROM "Oferta" o
+    JOIN "Programa" p ON o.id_programa = p.id_programa
+''', fetchall=True)
     return render_template('admin/manage_offers.html', ofertas=ofertas)
 
 

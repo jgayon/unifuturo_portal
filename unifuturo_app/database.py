@@ -25,6 +25,8 @@ def get_db_connection():
 
 
 def execute_query(query, params=None, fetchone=False, fetchall=False):
+    conn = None
+    cursor = None
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -44,6 +46,7 @@ def execute_query(query, params=None, fetchone=False, fetchall=False):
                 return [dict(zip(columns, row)) for row in rows]
             return []
 
+        # Solo se hace commit si NO es fetchone ni fetchall
         conn.commit()
         return True
 
@@ -57,6 +60,7 @@ def execute_query(query, params=None, fetchone=False, fetchall=False):
             cursor.close()
         if conn:
             conn.close()
+
 
 
 if __name__ == '__main__':
