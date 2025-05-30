@@ -491,6 +491,60 @@ def admin_manage_offers():
 ''', fetchall=True)
     return render_template('admin/manage_offers.html', ofertas=ofertas)
 
+@app.route('/admin/edit_profile', methods=['GET', 'POST'])
+def admin_edit_profile():
+    print("user_type:", session.get('user_type'))
+    if 'user_id' not in session or session['user_type'] != 'Administrador':
+        flash('Acceso no autorizado.', 'danger')
+        return redirect(url_for('index'))
+
+    user_id = session['user_id']
+    
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        apellido = request.form['apellido']
+        telefono = request.form['telefono']
+        direccion = request.form['direccion']
+        correo = request.form['correo']
+
+        update_query = '''
+            UPDATE "Usuario"
+            SET nombre = :nombre,
+                apellido = :apellido,
+                telefono = :telefono,
+                direccion = :direccion,
+                correo = :correo
+            WHERE id_usuario = :user_id
+        '''
+        params = {
+            'nombre': nombre,
+            'apellido': apellido,
+            'telefono': telefono,
+            'direccion': direccion,
+            'correo': correo,
+            'user_id': user_id
+        }
+
+        success = execute_query(update_query, params)
+        if success:
+            flash('Perfil actualizado correctamente.', 'success')
+            session['user_name'] = nombre
+            return redirect(url_for('admin_dashboard'))
+        else:
+            flash('Hubo un error al actualizar el perfil.', 'danger')
+
+    user_data = execute_query(
+        'SELECT nombre, apellido, telefono, direccion, correo FROM "Usuario" WHERE id_usuario = :id',
+        {'id': user_id}, fetchone=True
+    )
+
+    if user_data is None:
+        flash('No se pudieron cargar tus datos.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+
+    
+    return render_template('admin/edit_profile.html', user_data=user_data)
+
 
 
 #Run
