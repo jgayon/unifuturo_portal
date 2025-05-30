@@ -383,27 +383,29 @@ def admin_create_offer():
         return redirect(url_for('index'))
 
     if request.method == 'POST':
-        id_programa = request.form['id_programa']
-        periodo = request.form['periodo_academico']
-        titulo_conduce = request.form['titulo_conduce']
-        activa = request.form.get('activa', 'N')
-
-        insert_query = '''
-            INSERT INTO "Oferta" (id_programa, periodo_academico, titulo_conduce, activa)
-            VALUES (:id_programa, :periodo_academico, :titulo_conduce, :activa)
-        '''
-        params = {
-            'id_programa': id_programa,
-            'periodo_academico': periodo,
-            'titulo_conduce': titulo_conduce,
-            'activa': activa
+        data = {
+            'id_programa': request.form['id_programa'],
+            'periodo_academico': request.form['periodo_academico'],
+            'titulo_conduce': request.form['titulo_conduce'],
+            'costo_inscripcion': request.form['costo_inscripcion'],
+            'costo_programa': request.form['costo_programa'],
+            'activa': request.form['activa'],
+            'descripcion_oferta': request.form.get('descripcion_oferta', '')  # opcional
         }
 
-        success = execute_query(insert_query, params, commit=True)
+        insert_query = '''
+            INSERT INTO "Oferta" (id_programa, periodo_academico, titulo_conduce,
+                                  costo_inscripcion, costo_programa, activa, descripcion_oferta)
+            VALUES (:id_programa, :periodo_academico, :titulo_conduce,
+                    :costo_inscripcion, :costo_programa, :activa, :descripcion_oferta)
+        '''
+        success = execute_query(insert_query, data)
+
         if success:
-            flash('Oferta creada exitosamente.', 'success')
+            flash('Oferta creada correctamente.', 'success')
+            return redirect(url_for('admin_dashboard'))
         else:
-            flash('Hubo un error al crear la oferta.', 'danger')
+            flash('Error al crear la oferta.', 'danger')
 
     programas = execute_query('SELECT id_programa, nombre FROM "Programa"', fetchall=True)
     return render_template('admin/create_offer.html', programas=programas)

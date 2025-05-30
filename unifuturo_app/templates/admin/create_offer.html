@@ -1,3 +1,8 @@
+{% extends 'layout.html' %}
+
+{% block title %}Crear Oferta{% endblock %}
+
+{% block content %}
 <h2>Crear Nueva Oferta Académica</h2>
 
 <form method="POST">
@@ -14,6 +19,15 @@
   <label for="titulo_conduce">Título que Conduce:</label>
   <input type="text" name="titulo_conduce" required><br><br>
 
+  <label for="costo_inscripcion">Costo de la Inscripcíon:</label>
+  <input type="number" name="costo_inscripcion" required><br><br>
+
+  <label for="costo_programa">Costo total del Programa:</label>
+  <input type="number" name="costo_programa" required><br><br>
+
+  <label for="descripcion_oferta">Descripción:</label>
+  <input type="text" name="descripcion_oferta"><br><br>
+
   <label for="activa">¿Activa? (S/N):</label>
   <select name="activa">
     <option value="S">Sí</option>
@@ -22,3 +36,4 @@
 
   <button type="submit">Crear Oferta</button>
 </form>
+{% endblock %}
