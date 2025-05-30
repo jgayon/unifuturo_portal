@@ -1,21 +1,41 @@
-<h2>Crear Nueva Inscripción</h2>
+{% extends 'layout.html' %}
+{% block title %}Nueva Inscripción{% endblock %}
+{% block content %}
+<h2>Crear nueva inscripción</h2>
 
 <form method="POST">
-  <label for="id_oferta">Oferta Académica:</label>
-  <select name="id_oferta" required>
-    {% for oferta in active_offers %}
-      <option value="{{ oferta.ID_OFERTA }}">
-        {{ oferta.TITULO_CONDUCE }} ({{ oferta.PROGRAMA_NOMBRE }}) - {{ oferta.PERIODO_ACADEMICO }}
-        </option>
-
-    {% endfor %}
-  </select><br><br>
-
-  <label for="tipo_prospecto">Tipo de Prospecto:</label>
-  <select name="tipo_prospecto" required>
-    <option value="Nuevo">Nuevo</option>
-    <option value="Antiguo">Antiguo</option>
-  </select><br><br>
-
-  <button type="submit">Confirmar Inscripción</button>
+    <label for="periodo_academico">Seleccione el periodo académico:</label>
+    <select name="periodo_academico" onchange="this.form.submit()">
+        <option value="">-- Seleccione un periodo --</option>
+        {% for p in periodos %}
+            <option value="{{ p.PERIODO_ACADEMICO }}" {% if p.PERIODO_ACADEMICO == selected_periodo %}selected{% endif %}>
+                {{ p.PERIODO_ACADEMICO }}
+            </option>
+        {% endfor %}
+    </select>
+    <noscript><button type="submit">Buscar Ofertas</button></noscript>
 </form>
+
+{% if ofertas %}
+<form method="POST">
+    <input type="hidden" name="periodo_academico" value="{{ selected_periodo }}">
+    
+    <label for="oferta_id">Seleccione un programa:</label>
+    <select name="oferta_id" required>
+        <option value="">-- Seleccione un programa --</option>
+        {% for o in ofertas %}
+            <option value="{{ o.ID_OFERTA }}">{{ o.TITULO_CONDUCE }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="tipo_prospecto">Tipo de prospecto:</label>
+    <select name="tipo_prospecto" required>
+        <option value="">-- Seleccione una opción --</option>
+        <option value="Nacional">Nacional</option>
+        <option value="Extranjero">Extranjero</option>
+    </select>
+
+    <button type="submit" name="submit" value="Inscribirse">Inscribirse</button>
+</form>
+{% endif %}
+{% endblock %}

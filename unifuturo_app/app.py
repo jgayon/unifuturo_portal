@@ -133,8 +133,6 @@ def student_edit_profile():
         return redirect(url_for('index'))
 
     user_id = session['user_id']
-    columns = ['nombre', 'apellido', 'telefono', 'direccion', 'correo']
-    user_data = None
 
     if request.method == 'POST':
         nombre = request.form['nombre']
@@ -161,25 +159,28 @@ def student_edit_profile():
             'user_id': user_id
         }
 
-        success = execute_query(update_query, params, commit=True)
+        success = execute_query(update_query, params)
 
         if success:
             flash('Tu información ha sido actualizada correctamente.', 'success')
-            session['user_name'] = nombre  # Actualiza en la sesión
+            session['user_name'] = nombre
             return redirect(url_for('student_dashboard'))
         else:
             flash('Hubo un error al actualizar tu información.', 'danger')
 
-    # Siempre cargamos los datos actuales del usuario para mostrarlos en el formulario
-    user_data = execute_query('SELECT nombre, apellido, telefono, direccion, correo FROM "Usuario" WHERE id_usuario = :id', {'id': user_id}, fetchone=True)
-
+    # Carga de datos actual del usuario 
+    user_data = execute_query(
+        'SELECT nombre, apellido, telefono, direccion, correo FROM "Usuario" WHERE id_usuario = :id',
+        {'id': user_id},
+        fetchone=True
+    )
+    print("user_data:", user_data, type(user_data))
     if user_data is None:
         flash('Error al cargar tus datos.', 'danger')
         return redirect(url_for('student_dashboard'))
 
-    user_data = dict(zip(columns, user_data))
-
     return render_template('student/edit_profile.html', user_data=user_data)
+
 
 
 
@@ -190,59 +191,61 @@ def create_enrollment():
 
     user_id = session['user_id']
 
-    # Cargar las ofertas activas desde la BD
-    query_ofertas = 'SELECT id_oferta, periodo_academico, titulo_conduce FROM "Oferta" WHERE activa = \'S\''
-    ofertas = execute_query(query_ofertas, fetchall=True)
+    # Cargar periodos disponibles con ofertas activas
+    periodos = execute_query(
+        'SELECT DISTINCT periodo_academico FROM "Oferta" WHERE activa = \'S\' ORDER BY periodo_academico DESC',
+        fetchall=True
+    )
 
-    if request.method == 'POST':
+    selected_periodo = request.form.get('periodo_academico')
+    ofertas_disponibles = []
+
+    if selected_periodo:
+        ofertas_disponibles = execute_query(
+            '''SELECT id_oferta, titulo_conduce FROM "Oferta"
+               WHERE periodo_academico = :periodo AND activa = 'S' ''',
+            {'periodo': selected_periodo},
+            fetchall=True
+        )
+
+    if request.method == 'POST' and request.form.get('submit') == 'Inscribirse':
         oferta_id = request.form.get('oferta_id')
         tipo_prospecto = request.form.get('tipo_prospecto')
 
-        # Validaciones básicas
         if not oferta_id or not tipo_prospecto:
             flash('Todos los campos son obligatorios.', 'danger')
-            return render_template('enrollment/create_enrollment.html', ofertas=ofertas)
-
-        # Verificar si el usuario ya tiene inscripción para esa oferta
-        check_query = """
-            SELECT COUNT(*) AS cantidad
-            FROM "Inscripcion"
-            WHERE id_usuario = :id_usuario AND id_oferta = :id_oferta
-        """
-        check_params = {'id_usuario': user_id, 'id_oferta': oferta_id}
-        result = execute_query(check_query, check_params, fetchone=True)
-
-        existing_inscription_count = result['CANTIDAD'] if result else 0
-
-        if existing_inscription_count > 0:
-            flash('Ya tienes una inscripción para esta oferta.', 'warning')
-            return render_template('enrollment/create_enrollment.html', ofertas=ofertas)
-
-        # Crear nueva inscripción
-        insert_query = """
-            INSERT INTO "Inscripcion" (
-                id_usuario, id_oferta, tipo_prospecto, fecha_inscripcion, estado_inscripcion
-            ) VALUES (
-                :id_usuario, :id_oferta, :tipo_prospecto, SYSDATE, 'En progreso'
-            )
-        """
-        insert_params = {
-            'id_usuario': user_id,
-            'id_oferta': oferta_id,
-            'tipo_prospecto': tipo_prospecto
-        }
-
-        print("Insertando inscripción con:", insert_params)
-
-        success = execute_query(insert_query, insert_params, commit=True)
-
-        if success is not None:
-            flash('Inscripción realizada exitosamente.', 'success')
-            return redirect('/student_dashboard')
         else:
-            flash('Ocurrió un error al guardar la inscripción.', 'danger')
+            result = execute_query(
+                'SELECT COUNT(*) AS cantidad FROM "Inscripcion" WHERE id_usuario = :id_usuario AND id_oferta = :id_oferta',
+                {'id_usuario': user_id, 'id_oferta': oferta_id},
+                fetchone=True
+            )
 
-    return render_template('enrollment/create_enrollment.html', ofertas=ofertas)
+            if result and result['CANTIDAD'] > 0:
+                flash('Ya tienes una inscripción para esta oferta.', 'warning')
+            else:
+                insert_query = '''
+                    INSERT INTO "Inscripcion" (id_usuario, id_oferta, tipo_prospecto, fecha_inscripcion, estado_inscripcion)
+                    VALUES (:id_usuario, :id_oferta, :tipo_prospecto, SYSDATE, 'En progreso')
+                '''
+                params = {
+                    'id_usuario': user_id,
+                    'id_oferta': oferta_id,
+                    'tipo_prospecto': tipo_prospecto
+                }
+                success = execute_query(insert_query, params)
+                if success:
+                    flash('Inscripción realizada exitosamente.', 'success')
+                    return redirect('/student_dashboard')
+                else:
+                    flash('Ocurrió un error al guardar la inscripción.', 'danger')
+
+    return render_template(
+        'enrollment/create_enrollment.html',
+        periodos=periodos,
+        ofertas=ofertas_disponibles,
+        selected_periodo=selected_periodo
+    )
 
 @app.route('/student/view_enrollments')
 def student_view_enrollments():

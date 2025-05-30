@@ -1,21 +1,37 @@
-<h2>Editar Perfil</h2>
+{% extends 'layout.html' %}
+{% block title %}Editar Perfil{% endblock %}
+{% block content %}
+<div class="container">
+  <h2 style="margin-bottom: 20px;">Editar Perfil</h2>
+  <form method="POST">
+    <div style="margin-bottom: 15px;">
+      <label for="nombre">Nombre:</label><br>
+      <input type="text" name="nombre" value="{{ user_data['NOMBRE'] }}" style="width: 90%; padding: 8px;">
+    </div>
 
-<form method="POST">
-  <label>Nombre:</label>
-  <input type="text" name="nombre" value="{{ user_data['nombre'] }}" required><br>
+    <div style="margin-bottom: 15px;">
+      <label for="apellido">Apellido:</label><br>
+      <input type="text" name="apellido" value="{{ user_data['APELLIDO'] }}" style="width: 90%; padding: 8px;">
+    </div>
 
-  <label>Apellido:</label>
-  <input type="text" name="apellido" value="{{ user_data['apellido'] }}" required><br>
+    <div style="margin-bottom: 15px;">
+      <label for="telefono">Teléfono:</label><br>
+      <input type="text" name="telefono" value="{{ user_data['TELEFONO'] }}" style="width: 90%; padding: 8px;">
+    </div>
 
-  <label>Teléfono:</label>
-  <input type="text" name="telefono" value="{{ user_data['telefono'] }}"><br>
+    <div style="margin-bottom: 15px;">
+      <label for="direccion">Dirección:</label><br>
+      <input type="text" name="direccion" value="{{ user_data['DIRECCION'] }}" style="width: 90%; padding: 8px;">
+    </div>
 
-  <label>Dirección:</label>
-  <input type="text" name="direccion" value="{{ user_data['direccion'] }}"><br>
+    <div style="margin-bottom: 15px;">
+      <label for="correo">Correo:</label><br>
+      <input type="email" name="correo" value="{{ user_data['CORREO'] }}" style="width: 90%; padding: 8px;">
+    </div>
 
-  <label>Correo:</label>
-  <input type="email" name="correo" value="{{ user_data['correo'] }}" required><br>
-
-  <button type="submit">Guardar Cambios</button>
-</form>
-
+    <button type="submit" style="padding: 10px 20px; background-color: #007BFF; color: white; border: none;">
+      Guardar Cambios
+    </button>
+  </form>
+</div>
+{% endblock %}
