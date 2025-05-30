@@ -1,6 +1,36 @@
 <!-- review_enrollments.html -->
+{% extends 'layout.html' %}
+
+{% block title %}Revisión de Inscripciones{% endblock %}
+{% block content %}
 <h2>Revisión de Inscripciones</h2>
-<table>
+
+<tbody>
+  {% for ins in all_enrollments %}
+  <tr>
+    <td>{{ ins.NOMBRE_USUARIO }}</td>
+    <td>{{ ins.NOMBRE_PROGRAMA }}</td>
+    <td>{{ ins.PERIODO_ACADEMICO }}</td>
+    <td>{{ ins.ESTADO_INSCRIPCION }}</td>
+    <td>
+      <form action="{{ url_for('admin_review_enrollments') }}" method="post" style="display:inline;">
+        <input type="hidden" name="id_inscripcion" value="{{ ins.ID_INSCRIPCION }}">
+        <input type="hidden" name="nuevo_estado" value="Aceptado">
+        <button type="submit">Aceptar</button>
+      </form>
+      <form action="{{ url_for('admin_review_enrollments') }}" method="post" style="display:inline;">
+        <input type="hidden" name="id_inscripcion" value="{{ ins.ID_INSCRIPCION }}">
+        <input type="hidden" name="nuevo_estado" value="Rechazado">
+        <button type="submit">Rechazar</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+
+{% endblock %}
+
+<!-- <table>
   <tr><th>Estudiante</th><th>Programa</th><th>Periodo</th><th>Estado</th></tr>
   {% for ins in all_enrollments %}
     <tr>
@@ -10,4 +40,4 @@
       <td>{{ ins.ESTADO_INSCRIPCION }}</td>
     </tr>
   {% endfor %}
-</table>
+</table> -->

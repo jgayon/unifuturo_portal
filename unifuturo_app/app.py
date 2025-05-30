@@ -340,14 +340,37 @@ def manage_subjects():
     return render_template('admin/manage_subjects.html', asignaturas=asignaturas)
 
 #Revisar Inscripciones
-@app.route('/admin/review_enrollments')
+@app.route('/admin/review_enrollments', methods=['GET', 'POST'])
 def admin_review_enrollments():
     if 'user_id' not in session or session['user_type'] != 'Administrador':
         flash('Acceso no autorizado.', 'danger')
         return redirect(url_for('index'))
 
+    if request.method == 'POST':
+        id_inscripcion = request.form.get('id_inscripcion')
+        nuevo_estado = request.form.get('nuevo_estado')
+
+        update_query = '''
+            UPDATE "Inscripcion"
+            SET estado_inscripcion = :nuevo_estado
+            WHERE id_inscripcion = :id_inscripcion
+        '''
+        execute_query(update_query, {
+            'nuevo_estado': nuevo_estado,
+            'id_inscripcion': id_inscripcion
+        })
+
+        flash(f'Inscripción {id_inscripcion} actualizada a "{nuevo_estado}".', 'success')
+        return redirect(url_for('admin_review_enrollments'))
+
+    # Consulta para mostrar todas las inscripciones
     query = '''
-        SELECT i.id_inscripcion, u.nombre, u.apellido, o.periodo_academico, p.nombre AS programa, i.estado_inscripcion
+        SELECT 
+            i.id_inscripcion AS ID_INSCRIPCION,
+            u.nombre || ' ' || u.apellido AS NOMBRE_USUARIO,
+            o.periodo_academico AS PERIODO_ACADEMICO,
+            p.nombre AS NOMBRE_PROGRAMA,
+            i.estado_inscripcion AS ESTADO_INSCRIPCION
         FROM "Inscripcion" i
         JOIN "Usuario" u ON i.id_usuario = u.id_usuario
         JOIN "Oferta" o ON i.id_oferta = o.id_oferta
