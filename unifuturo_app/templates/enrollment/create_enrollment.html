@@ -3,9 +3,9 @@
 {% block content %}
 <h2>Crear nueva inscripción</h2>
 
-<form method="POST">
-    <label for="periodo_academico">Seleccione el periodo académico:</label>
-    <select name="periodo_academico" onchange="this.form.submit()">
+<form method="POST" enctype="multipart/form-data">
+    <label for="periodo_academico">Seleccione el periodo académico:</label><br>
+    <select name="periodo_academico" onchange="this.form.submit()" style="margin-bottom: 1em;">
         <option value="">-- Seleccione un periodo --</option>
         {% for p in periodos %}
             <option value="{{ p.PERIODO_ACADEMICO }}" {% if p.PERIODO_ACADEMICO == selected_periodo %}selected{% endif %}>
@@ -13,29 +13,66 @@
             </option>
         {% endfor %}
     </select>
-    <noscript><button type="submit">Buscar Ofertas</button></noscript>
 </form>
 
 {% if ofertas %}
-<form method="POST">
+<form method="POST" enctype="multipart/form-data" id="formInscripcion">
     <input type="hidden" name="periodo_academico" value="{{ selected_periodo }}">
-    
-    <label for="oferta_id">Seleccione un programa:</label>
-    <select name="oferta_id" required>
+
+    <label for="oferta_id">Seleccione un programa:</label><br>
+    <select name="oferta_id" id="ofertaSelect" required style="margin-bottom: 1em;">
         <option value="">-- Seleccione un programa --</option>
         {% for o in ofertas %}
-            <option value="{{ o.ID_OFERTA }}">{{ o.TITULO_CONDUCE }}</option>
+            <option value="{{ o.ID_OFERTA }}">{{ o.NOMBRE_PROGRAMA }}</option>
         {% endfor %}
     </select>
 
-    <label for="tipo_prospecto">Tipo de prospecto:</label>
-    <select name="tipo_prospecto" required>
+    <div id="requisitosContainer" style="margin-top: 1em; margin-bottom: 1em;"></div>
+
+    <label for="tipo_prospecto">Tipo de prospecto:</label><br>
+    <select name="tipo_prospecto" required style="margin-bottom: 1em;">
         <option value="">-- Seleccione una opción --</option>
         <option value="Nacional">Nacional</option>
         <option value="Extranjero">Extranjero</option>
     </select>
 
-    <button type="submit" name="submit" value="Inscribirse">Inscribirse</button>
+    <button type="submit" name="submit" value="Inscribirse" style="margin-top: 1em;">Inscribirse</button>
 </form>
+
+<script>
+document.getElementById("ofertaSelect").addEventListener("change", function () {
+    const ofertaId = this.value;
+    const requisitosDiv = document.getElementById("requisitosContainer");
+    requisitosDiv.innerHTML = '';
+
+    if (!ofertaId) return;
+
+    fetch(`/get_requisitos/${ofertaId}`)
+        .then(response => response.json())
+        .then(requisitos => {
+            if (requisitos.length > 0) {
+                requisitos.forEach((req, index) => {
+                    requisitosDiv.innerHTML += `
+                        <div style="margin-bottom: 1em;">
+                            <label>${index + 1}. ${req.NOMBRE_REQUISITO}</label><br>
+                            <input type="file" name="documento_${index}" required>
+                            <input type="hidden" name="requisito_id_${index}" value="${req.ID_REQUISITO}">
+                        </div>
+                    `;
+                });
+                requisitosDiv.innerHTML += `<input type="hidden" name="total_requisitos" value="${requisitos.length}">`;
+            } else {
+                requisitosDiv.innerHTML = '<p>No hay requisitos definidos para este programa.</p>';
+            }
+        });
+});
+</script>
 {% endif %}
+<div style="margin-top: 50px; text-align: center;">
+    {% if session['user_type'] == 'Administrador' %}
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary" style="background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Volver al Menú Principal</a>
+    {% elif session['user_type'] == 'Cliente' %}
+        <a href="{{ url_for('student_dashboard') }}" class="btn btn-primary" style="background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Volver al Menú Principal</a>
+    {% endif %}
+</div>
 {% endblock %}

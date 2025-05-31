@@ -9,9 +9,6 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 app.config.from_object(Config)
 
-app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
 @app.route('/')
 def index():
     return render_template('home.html')
@@ -217,25 +214,41 @@ def student_edit_profile():
     return render_template('student/edit_profile.html', user_data=user_data)
 
 
+
+
 @app.route('/create_enrollment', methods=['GET', 'POST'])
+def get_requisitos(id_oferta):
+    query = '''
+        SELECT r.id_requisito, r.descripcion
+        FROM "Oferta_Requisito" orq
+        JOIN "Requisitos" r ON orq.id_requisito = r.id_requisito
+        WHERE orq.id_oferta = :id_oferta
+    '''
+    return execute_query(query, {'id_oferta': id_oferta}, fetchall=True)
+
 def create_enrollment():
     if 'user_id' not in session:
         return redirect('/login')
 
     user_id = session['user_id']
+
+    # Cargar periodos disponibles con ofertas activas
     periodos = execute_query(
-        'SELECT DISTINCT periodo_academico FROM "Oferta" WHERE activa = \'S\' ORDER BY periodo_academico DESC',
+        '''
+    SELECT DISTINCT periodo_academico
+    FROM "Oferta"
+    WHERE activa = 'S'
+    ORDER BY periodo_academico DESC
+    ''',
         fetchall=True
     )
 
     selected_periodo = request.form.get('periodo_academico')
     ofertas_disponibles = []
-    requisitos = []
-    oferta_id = request.form.get('oferta_id')
 
     if selected_periodo:
         ofertas_disponibles = execute_query(
-            '''SELECT o.id_oferta, p.nombre AS nombre_programa
+            '''SELECT o.id_oferta, p.nombre AS programa_nombre
                FROM "Oferta" o
                JOIN "Programa" p ON o.id_programa = p.id_programa
                WHERE o.periodo_academico = :periodo AND o.activa = 'S' ''',
@@ -243,23 +256,13 @@ def create_enrollment():
             fetchall=True
         )
 
-    if oferta_id:
-        requisitos = execute_query(
-            '''SELECT r.id_requisito, r.nombre_requisito
-               FROM "Oferta_Requisito" orq
-               JOIN "Requisitos" r ON orq.id_requisito = r.id_requisito
-               WHERE orq.id_oferta = :id_oferta''',
-            {'id_oferta': oferta_id},
-            fetchall=True
-        )
-
     if request.method == 'POST' and request.form.get('submit') == 'Inscribirse':
+        oferta_id = request.form.get('oferta_id')
         tipo_prospecto = request.form.get('tipo_prospecto')
 
         if not oferta_id or not tipo_prospecto:
             flash('Todos los campos son obligatorios.', 'danger')
         else:
-            # Verificar inscripción existente
             result = execute_query(
                 'SELECT COUNT(*) AS cantidad FROM "Inscripcion" WHERE id_usuario = :id_usuario AND id_oferta = :id_oferta',
                 {'id_usuario': user_id, 'id_oferta': oferta_id},
@@ -278,45 +281,18 @@ def create_enrollment():
                     'id_oferta': oferta_id,
                     'tipo_prospecto': tipo_prospecto
                 }
-                execute_query(insert_query, params)
-
-                # Obtener id_inscripcion recién creada
-                insc = execute_query(
-                    '''SELECT MAX(id_inscripcion) AS id FROM "Inscripcion"
-                       WHERE id_usuario = :id_usuario AND id_oferta = :id_oferta''',
-                    {'id_usuario': user_id, 'id_oferta': oferta_id},
-                    fetchone=True
-                )
-                id_inscripcion = insc['ID'] if insc else None
-
-                # Guardar documentos
-                for req in requisitos:
-                    file = request.files.get(f'doc_{req["id_requisito"]}')
-                    if file and file.filename:
-                        filename = secure_filename(file.filename)
-                        ruta = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                        file.save(ruta)
-
-                        execute_query('''
-                            INSERT INTO "Documentos" (id_inscripcion, id_requisito, nombre_archivo, ruta_archivo, tipo_mime)
-                            VALUES (:id_inscripcion, :id_requisito, :nombre_archivo, :ruta_archivo, :tipo_mime)
-                        ''', {
-                            'id_inscripcion': id_inscripcion,
-                            'id_requisito': req['id_requisito'],
-                            'nombre_archivo': filename,
-                            'ruta_archivo': ruta,
-                            'tipo_mime': file.content_type
-                        })
-
-                flash('Inscripción y documentos guardados exitosamente.', 'success')
-                return redirect('/student_dashboard')
+                success = execute_query(insert_query, params)
+                if success:
+                    flash('Inscripción realizada exitosamente.', 'success')
+                    return redirect('/student_dashboard')
+                else:
+                    flash('Ocurrió un error al guardar la inscripción.', 'danger')
 
     return render_template(
         'enrollment/create_enrollment.html',
         periodos=periodos,
         ofertas=ofertas_disponibles,
-        selected_periodo=selected_periodo,
-        requisitos=requisitos
+        selected_periodo=selected_periodo
     )
 
 @app.route('/student/view_enrollments')

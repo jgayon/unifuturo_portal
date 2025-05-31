@@ -40,6 +40,13 @@
     {% else %}
         <p>Aún no tienes inscripciones registradas.</p>
     {% endif %}
-    <a href="{{ url_for('student_dashboard') }}" class="btn btn-secondary mt-3">Volver al Dashboard</a>
+    
+</div>
+<div style="margin-top: 50px; text-align: center;">
+    {% if session['user_type'] == 'Administrador' %}
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary" style="background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Volver al Menú Principal</a>
+    {% elif session['user_type'] == 'Cliente' %}
+        <a href="{{ url_for('student_dashboard') }}" class="btn btn-primary" style="background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Volver al Menú Principal</a>
+    {% endif %}
 </div>
 {% endblock %}
