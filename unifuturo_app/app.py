@@ -104,7 +104,7 @@ def register():
             'username': username
         }
 
-        success = execute_query(query, params, commit=True)
+        success = execute_query(query, params)
 
         if success:
             flash('Usuario creado exitosamente. ¡Ahora puedes iniciar sesión!', 'success')
@@ -368,33 +368,52 @@ def admin_manage_academic_offer():
 
 #Manejar requisitos
 @app.route('/admin/manage_requirements', methods=['GET', 'POST'])
-def manage_requirements():
+def admin_manage_requirements():
     if 'user_id' not in session or session['user_type'] != 'Administrador':
         flash('Acceso no autorizado.', 'danger')
         return redirect(url_for('index'))
 
     if request.method == 'POST':
-        action = request.form['action']
-        req_id = request.form['id_requisito']
+        action = request.form.get('action')
+        id_requisito = request.form.get('id_requisito')
+        nombre_doc = request.form.get('nombre_doc')  
 
-        if action == 'Editar':
-            nuevo_nombre = request.form['nombre']
-            update_query = '''
-                UPDATE "Requisitos"
-                SET nombre = :nombre
-                WHERE id_requisito = :id_requisito
-            '''
-            execute_query(update_query, {'nombre': nuevo_nombre, 'id_requisito': req_id}, commit=True)
-            flash('Requisito actualizado.', 'success')
+        if action == 'Agregar':
+            if nombre_doc:
+                insert_query = 'INSERT INTO "Requisitos" (nombre_doc) VALUES (:nombre_doc)'
+                execute_query(insert_query, {'nombre_doc': nombre_doc})
+                flash('Requisito agregado exitosamente.', 'success')
+            else:
+                flash('El nombre del requisito no puede estar vacío.', 'warning')
+
+        elif action == 'Editar':
+            if id_requisito and nombre_doc:
+                update_query = '''
+                    UPDATE "Requisitos"
+                    SET nombre_doc = :nombre_doc
+                    WHERE id_requisito = :id_requisito
+                '''
+                execute_query(update_query, {
+                    'nombre_doc': nombre_doc,
+                    'id_requisito': id_requisito
+                })
+                flash('Requisito actualizado correctamente.', 'success')
+            else:
+                flash('Faltan datos para actualizar el requisito.', 'danger')
+
         elif action == 'Eliminar':
-            delete_query = 'DELETE FROM "Requisitos" WHERE id_requisito = :id_requisito'
-            execute_query(delete_query, {'id_requisito': req_id}, commit=True)
-            flash('Requisito eliminado.', 'info')
+            if id_requisito:
+                delete_query = 'DELETE FROM "Requisitos" WHERE id_requisito = :id_requisito'
+                execute_query(delete_query, {'id_requisito': id_requisito})
+                flash('Requisito eliminado correctamente.', 'info')
+            else:
+                flash('ID de requisito no válido.', 'danger')
 
-    requisitos = execute_query('SELECT * FROM "Requisitos"', fetchall=True)
-    if requisitos is None:
-        requisitos = []
+        return redirect(url_for('admin_manage_requirements'))
+
+    requisitos = execute_query('SELECT id_requisito, nombre_doc FROM "Requisitos"', fetchall=True) or []
     return render_template('admin/manage_requirements.html', requisitos=requisitos)
+
 
 #Revisar Programa
 @app.route('/admin/manage_programs')

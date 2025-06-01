@@ -23,6 +23,10 @@
         <input type="hidden" name="nuevo_estado" value="Rechazado">
         <button type="submit">Rechazar</button>
       </form>
+      <form>
+        <input type="hidden" name="id_inscripcion" value="{{ ins.ID_INSCRIPCION }}">
+         <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary" style="background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Revisar Documentos</a>
+      </form>
     </td>
   </tr>
   {% endfor %}
