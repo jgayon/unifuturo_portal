@@ -1,0 +1,48 @@
+{% extends 'layout.html' %}
+{% block title %}{{ programa and 'Editar' or 'Crear' }} Programa{% endblock %}
+
+{% block content %}
+<h2>{{ programa and 'Editar' or 'Crear' }} Programa Académico</h2>
+
+<form method="POST" action="">
+    <label>Nombre:</label>
+    <input type="text" name="nombre" value="{{ programa.NOMBRE if programa else '' }}" required><br>
+
+    <label>Número de Semestres:</label>
+    <input type="number" name="num_semestres" value="{{ programa.NUM_SEMESTRES if programa else '' }}" required><br>
+
+    <label>Descripción:</label>
+    <textarea name="descripcion">{{ programa.DESCRIPCION if programa else '' }}</textarea><br>
+
+    <button type="submit">{{ programa and 'Guardar Cambios' or 'Crear Programa' }}</button>
+</form>
+
+{% if programa %}
+<hr>
+<h3>Asignaturas del Programa</h3>
+<ul>
+  {% for asig in asignaturas_prog %}
+    <li>
+      {{ asig.NOMBRE }} - Semestre {{ asig.SEMESTRE_EN_PROGRAMA }}
+      <form method="POST" action="{{ url_for('remove_subject_from_program', id_programa=programa.ID_PROGRAMA) }}" style="display:inline;">
+        <input type="hidden" name="id_asignatura" value="{{ asig.ID_ASIGNATURA }}">
+        <button type="submit" onclick="return confirm('¿Eliminar esta asignatura del programa?');">Eliminar</button>
+      </form>
+    </li>
+  {% endfor %}
+</ul>
+
+<h4>Agregar Asignatura</h4>
+<form method="POST" action="{{ url_for('add_subject_to_program', id_programa=programa.ID_PROGRAMA) }}">
+    <select name="id_asignatura">
+      {% for asig in asignaturas %}
+        <option value="{{ asig.ID_ASIGNATURA }}">{{ asig.NOMBRE }}</option>
+      {% endfor %}
+    </select>
+    <input type="number" name="semestre" min="1" placeholder="Semestre" required>
+    <button type="submit">Agregar</button>
+</form>
+{% endif %}
+
+<a href="{{ url_for('manage_programs') }}">← Volver a la lista</a>
+{% endblock %}

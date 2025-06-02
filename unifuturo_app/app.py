@@ -415,7 +415,7 @@ def admin_manage_requirements():
     return render_template('admin/manage_requirements.html', requisitos=requisitos)
 
 
-#Revisar Programa
+#Revisar/Editar/Crear Programa
 @app.route('/admin/manage_programs')
 def manage_programs():
     if 'user_id' not in session or session['user_type'] != 'Administrador':
@@ -424,14 +424,175 @@ def manage_programs():
     programas = execute_query('SELECT * FROM "Programa"', fetchall=True)
     return render_template('admin/manage_programs.html', programas=programas)
 
+@app.route('/admin/program/<int:id_programa>', methods=['GET', 'POST'])
+def edit_program(id_programa):
+    if 'user_id' not in session or session['user_type'] != 'Administrador':
+        return redirect(url_for('index'))
+
+    # Cargar programa si se está editando
+    programa = None
+    if id_programa != 0:
+        programa = execute_query(
+            'SELECT * FROM "Programa" WHERE id_programa = :id',
+            {'id': id_programa},
+            fetchone=True
+        )
+
+    # Cargar asignaturas existentes
+    asignaturas = execute_query('SELECT id_asignatura, nombre FROM "Asignaturas"', fetchall=True)
+
+    # Cargar asignaturas ya agregadas a este programa
+    asignaturas_prog = []
+    if id_programa != 0:
+        asignaturas_prog = execute_query('''
+            SELECT a.id_asignatura, a.nombre, pa.semestre_en_programa
+            FROM "Programa_Asignatura" pa
+            JOIN "Asignaturas" a ON a.id_asignatura = pa.id_asignatura
+            WHERE pa.id_programa = :id
+        ''', {'id': id_programa}, fetchall=True)
+
+    return render_template('admin/edit_program.html',
+                           programa=programa,
+                           asignaturas=asignaturas,
+                           asignaturas_prog=asignaturas_prog)
+
+@app.route('/admin/program/new')
+def create_program():
+    return redirect(url_for('edit_program', id_programa=0))
+
+@app.route('/admin/program/<int:id_programa>', methods=['POST'])
+def save_program(id_programa):
+    nombre = request.form['nombre']
+    num_semestres = request.form['num_semestres']
+    descripcion = request.form.get('descripcion', '')
+
+    if id_programa == 0:
+        query = '''
+        INSERT INTO "Programa" (nombre, num_semestres, descripcion)
+        VALUES (:nombre, :num_semestres, :descripcion)
+        '''
+        execute_query(query, {
+            'nombre': nombre,
+            'num_semestres': num_semestres,
+            'descripcion': descripcion
+        })
+        flash('Programa creado con éxito.', 'success')
+    else:
+        query = '''
+        UPDATE "Programa"
+        SET nombre = :nombre,
+            num_semestres = :num_semestres,
+            descripcion = :descripcion
+        WHERE id_programa = :id
+        '''
+        execute_query(query, {
+            'nombre': nombre,
+            'num_semestres': num_semestres,
+            'descripcion': descripcion,
+            'id': id_programa
+        })
+        flash('Programa actualizado con éxito.', 'success')
+
+    return redirect(url_for('manage_programs'))
+
+@app.route('/admin/program/<int:id_programa>/add_subject', methods=['POST'])
+def add_subject_to_program(id_programa):
+    id_asignatura = request.form['id_asignatura']
+    semestre = request.form['semestre']
+
+    execute_query('''
+        INSERT INTO "Programa_Asignatura" (id_programa, id_asignatura, semestre_en_programa)
+        VALUES (:id_programa, :id_asignatura, :semestre)
+    ''', {
+        'id_programa': id_programa,
+        'id_asignatura': id_asignatura,
+        'semestre': semestre
+    })
+
+    flash('Asignatura agregada al programa.', 'success')
+    return redirect(url_for('edit_program', id_programa=id_programa))
+
+@app.route('/admin/program/<int:id_programa>/remove_subject', methods=['POST'])
+def remove_subject_from_program(id_programa):
+    id_asignatura = request.form['id_asignatura']
+
+    execute_query('''
+        DELETE FROM "Programa_Asignatura"
+        WHERE id_programa = :id_programa AND id_asignatura = :id_asignatura
+    ''', {
+        'id_programa': id_programa,
+        'id_asignatura': id_asignatura
+    })
+
+    flash('Asignatura eliminada del programa.', 'info')
+    return redirect(url_for('edit_program', id_programa=id_programa))
+
 #Revisar Asignaturas
-@app.route('/admin/manage_subjects')
+@app.route('/admin/manage_subjects', methods=['GET'])
 def manage_subjects():
     if 'user_id' not in session or session['user_type'] != 'Administrador':
         return redirect(url_for('index'))
 
     asignaturas = execute_query('SELECT * FROM "Asignaturas"', fetchall=True)
     return render_template('admin/manage_subjects.html', asignaturas=asignaturas)
+
+
+@app.route('/admin/subject/create', methods=['POST'])
+def create_subject():
+    nombre = request.form.get('nombre')
+    semestre = request.form.get('semestre')
+    descripcion = request.form.get('descripcion')
+
+    if nombre and semestre and descripcion:
+        query = '''
+            INSERT INTO "Asignaturas" (NOMBRE, SEMESTRE, DESCRIPCION)
+            VALUES (:nombre, :semestre, :descripcion)
+        '''
+        execute_query(query, {
+            'nombre': nombre,
+            'semestre': semestre,
+            'descripcion': descripcion
+        })
+        flash('Asignatura creada exitosamente.', 'success')
+    else:
+        flash('Todos los campos son obligatorios.', 'danger')
+
+    return redirect(url_for('manage_subjects'))
+
+
+@app.route('/admin/subject/<int:id_asignatura>/edit', methods=['POST'])
+def edit_subject(id_asignatura):
+    nombre = request.form.get('nombre')
+    semestre = request.form.get('semestre')
+    descripcion = request.form.get('descripcion')
+
+    if nombre and semestre and descripcion:
+        query = '''
+            UPDATE "Asignaturas"
+            SET NOMBRE = :nombre,
+                SEMESTRE = :semestre,
+                DESCRIPCION = :descripcion
+            WHERE ID_ASIGNATURA = :id_asignatura
+        '''
+        execute_query(query, {
+            'nombre': nombre,
+            'semestre': semestre,
+            'descripcion': descripcion,
+            'id_asignatura': id_asignatura
+        })
+        flash('Asignatura actualizada correctamente.', 'info')
+    else:
+        flash('Todos los campos son obligatorios.', 'danger')
+
+    return redirect(url_for('manage_subjects'))
+
+
+@app.route('/admin/subject/<int:id_asignatura>/delete', methods=['POST'])
+def delete_subject(id_asignatura):
+    query = 'DELETE FROM "Asignaturas" WHERE ID_ASIGNATURA = :id_asignatura'
+    execute_query(query, {'id_asignatura': id_asignatura})
+    flash('Asignatura eliminada.', 'warning')
+    return redirect(url_for('manage_subjects'))
 
 #Revisar Inscripciones
 @app.route('/admin/review_enrollments', methods=['GET', 'POST'])

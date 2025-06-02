@@ -1,28 +1,62 @@
-<!-- manage_subjects.html -->
-
-
+<!-- templates/admin/manage_subjects.html -->
 {% extends 'layout.html' %}
 
-{% block title %}Manejar Asignaturas{% endblock %}
+{% block title %}Gestionar Asignaturas{% endblock %}
 
 {% block content %}
-<h2>Gestión de Asignaturas</h2>
-<ul>
-  {% for asig in asignaturas %}
-    <li>{{ asig.NOMBRE }} (Semestre {{ asig.SEMESTRE }})
-      <form method="POST" style="display:inline">
-        <input type="hidden" name="id_asignatura" value="{{ asig.ID_ASIGNATURA }}">
-        <button name="action" value="Editar">Editar</button>
-        <button name="action" value="Eliminar">Eliminar</button>
-      </form>
-    </li>
-  {% endfor %}
-</ul>
+<h2>Gestionar Asignaturas</h2>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul>
+      {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<table border="1">
+<thead>
+    <tr>
+        <th>Nombre</th>
+        <th>Semestre</th>
+        <th>Descripción</th>
+        <th>Acciones</th>
+    </tr>
+</thead>
+<tbody>
+{% for asig in asignaturas %}
+    <tr>
+        <form method="POST" action="{{ url_for('edit_subject', id_asignatura=asig.ID_ASIGNATURA) }}">
+            <td><input type="text" name="nombre" value="{{ asig.NOMBRE }}"></td>
+            <td><input type="number" name="semestre" value="{{ asig.SEMESTRE }}"></td>
+            <td><input type="text" name="descripcion" value="{{ asig.DESCRIPCION }}"></td>
+            <td>
+                <button type="submit">Guardar</button>
+        </form>
+        <form method="POST" action="{{ url_for('delete_subject', id_asignatura=asig.ID_ASIGNATURA) }}" style="display:inline;">
+            <button type="submit" onclick="return confirm('Eliminar asignatura?')">Eliminar</button>
+        </form>
+            </td>
+    </tr>
+{% endfor %}
+</tbody>
+</table>
+
+<hr>
+<h3>Agregar nueva asignatura</h3>
+<form method="POST" action="{{ url_for('create_subject') }}">
+    <label>Nombre:</label>
+    <input type="text" name="nombre" required>
+    <label>Semestre:</label>
+    <input type="number" name="semestre" required>
+    <label>Descripción:</label>
+    <input type="text" name="descripcion" required>
+    <button type="submit">Agregar</button>
+</form>
+
 <div style="margin-top: 50px; text-align: center;">
-    {% if session['user_type'] == 'Administrador' %}
-        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary" style="background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Volver al Menú Principal</a>
-    {% elif session['user_type'] == 'Cliente' %}
-        <a href="{{ url_for('student_dashboard') }}" class="btn btn-primary" style="background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Volver al Menú Principal</a>
-    {% endif %}
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary">Volver al Menú Principal</a>
 </div>
-{% endblock%}
+{% endblock %}
