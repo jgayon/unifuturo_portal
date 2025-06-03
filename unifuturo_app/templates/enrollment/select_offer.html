@@ -1,0 +1,38 @@
+{% extends 'layout.html' %}
+{% block title %}Nueva Inscripción{% endblock %}
+{% block content %}
+<h2>Seleccionar programa</h2>
+<form method="POST">
+    <label>Periodo académico:</label><br>
+    <select name="periodo_academico" onchange="this.form.submit()">
+        <option value="">-- Seleccione un periodo --</option>
+        {% for p in periodos %}
+        <option value="{{ p.PERIODO_ACADEMICO }}" {% if p.PERIODO_ACADEMICO == selected_periodo %}selected{% endif %}>
+            {{ p.PERIODO_ACADEMICO }}
+        </option>
+        {% endfor %}
+    </select>
+</form>
+
+{% if ofertas %}
+<form method="POST">
+    <input type="hidden" name="periodo_academico" value="{{ selected_periodo }}">
+    <label>Programa:</label><br>
+    <select name="oferta_id" required>
+        <option value="">-- Seleccione --</option>
+        {% for o in ofertas %}
+        <option value="{{ o.ID_OFERTA }}">{{ o.NOMBRE_PROGRAMA }}</option>
+        {% endfor %}
+    </select>
+
+    <br><label>Tipo de prospecto:</label><br>
+    <select name="tipo_prospecto" required>
+        <option value="">-- Seleccione --</option>
+        <option value="Nacional">Nacional</option>
+        <option value="Extranjero">Extranjero</option>
+    </select>
+
+    <br><button type="submit" name="siguiente">Siguiente</button>
+</form>
+{% endif %}
+{% endblock %}
