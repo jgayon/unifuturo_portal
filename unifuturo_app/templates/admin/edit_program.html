@@ -1,23 +1,22 @@
 {% extends 'layout.html' %}
-{% block title %}{{ programa and 'Editar' or 'Crear' }} Programa{% endblock %}
+{% block title %}Editar Programa{% endblock %}
 
 {% block content %}
-<h2>{{ programa and 'Editar' or 'Crear' }} Programa Académico</h2>
+<h2>Editar Programa Académico</h2>
 
-<form method="POST" action="">
+<form method="POST" action="{{ url_for('update_program', id_programa=programa.ID_PROGRAMA) }}">
     <label>Nombre:</label>
-    <input type="text" name="nombre" value="{{ programa.NOMBRE if programa else '' }}" required><br>
+    <input type="text" name="nombre" value="{{ programa.NOMBRE }}" required><br>
 
     <label>Número de Semestres:</label>
-    <input type="number" name="num_semestres" value="{{ programa.NUM_SEMESTRES if programa else '' }}" required><br>
+    <input type="number" name="num_semestres" value="{{ programa.NUM_SEMESTRES }}" required><br>
 
     <label>Descripción:</label>
-    <textarea name="descripcion">{{ programa.DESCRIPCION if programa else '' }}</textarea><br>
+    <textarea name="descripcion">{{ programa.DESCRIPCION }}</textarea><br>
 
-    <button type="submit">{{ programa and 'Guardar Cambios' or 'Crear Programa' }}</button>
+    <button type="submit">Guardar Cambios</button>
 </form>
 
-{% if programa %}
 <hr>
 <h3>Asignaturas del Programa</h3>
 <ul>
@@ -42,7 +41,6 @@
     <input type="number" name="semestre" min="1" placeholder="Semestre" required>
     <button type="submit">Agregar</button>
 </form>
-{% endif %}
 
 <a href="{{ url_for('manage_programs') }}">← Volver a la lista</a>
 {% endblock %}

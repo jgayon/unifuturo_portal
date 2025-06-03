@@ -5,7 +5,7 @@
 {% block content %}
 <h2>Gestión de Programas Académicos</h2>
 
-<table border="1">
+<table class="table table-bordered">
   <thead>
     <tr>
       <th>Nombre</th>
@@ -14,12 +14,15 @@
     </tr>
   </thead>
   <tbody>
-    {% for prog in programas %}
+    {% for programa in programas %}
     <tr>
-      <td>{{ prog.NOMBRE }}</td>
-      <td>{{ prog.NUM_SEMESTRES }}</td>
+      <td>{{ programa.NOMBRE }}</td>
+      <td>{{ programa.NUM_SEMESTRES }}</td>
       <td>
-        <a href="{{ url_for('edit_program', id_programa=prog.ID_PROGRAMA) }}">Editar</a>
+        <a href="{{ url_for('update_program', id_programa=programa.ID_PROGRAMA) }}" class="btn btn-warning btn-sm">Editar</a>
+        <form method="POST" action="{{ url_for('delete_program', id_programa=programa.ID_PROGRAMA) }}" style="display:inline;" onsubmit="return confirm('¿Seguro que deseas eliminar este programa?');">
+          <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+        </form>
       </td>
     </tr>
     {% endfor %}

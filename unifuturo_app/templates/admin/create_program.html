@@ -1,0 +1,21 @@
+{% extends 'layout.html' %}
+{% block title %}Crear Programa{% endblock %}
+
+{% block content %}
+<h2>Crear Programa Académico</h2>
+
+<form method="POST" action="{{ url_for('create_program') }}">
+    <label>Nombre:</label>
+    <input type="text" name="nombre" required><br>
+
+    <label>Número de Semestres:</label>
+    <input type="number" name="num_semestres" required><br>
+
+    <label>Descripción:</label>
+    <textarea name="descripcion"></textarea><br>
+
+    <button type="submit">Crear Programa</button>
+</form>
+
+<a href="{{ url_for('manage_programs') }}">← Volver a la lista</a>
+{% endblock %}
