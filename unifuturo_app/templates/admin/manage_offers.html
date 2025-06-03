@@ -3,7 +3,7 @@
 {% block title %}Gestionar Ofertas Académicas{% endblock %}
 
 {% block content %}
-<h1>Editar Ofertas Académicas</h1>
+<h2>Editar Ofertas Académicas</h2>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
@@ -15,16 +15,18 @@
   {% endif %}
 {% endwith %}
 
-<table border="1">
-<thead>
+<div style="overflow-x: auto;">
+<table style="width: 100%; font-size: 0.85em; border-collapse: collapse;" border="1">
+<thead style="background-color: #f2f2f2;">
     <tr>
         <th>Programa</th>
-        <th>Periodo Académico</th>
+        <th>Período</th>
         <th>Título</th>
         <th>Inscripción</th>
         <th>Costo</th>
         <th>Descripción</th>
         <th>Activa</th>
+        <th>Requisitos</th>
         <th>Acciones</th>
     </tr>
 </thead>
@@ -34,36 +36,49 @@
         <form action="{{ url_for('admin_manage_offers') }}" method="post">
             <input type="hidden" name="action" value="Editar">
             <input type="hidden" name="id_oferta" value="{{ oferta['ID_OFERTA'] }}">
-            <td>{{ oferta['PROGRAMA_NOMBRE'] }}</td>
-            <td><input type="text" name="periodo_academico" value="{{ oferta['PERIODO_ACADEMICO'] }}"></td>
-            <td><input type="text" name="titulo_conduce" value="{{ oferta['TITULO_CONDUCE'] }}"></td>
-            <td><input type="number" name="costo_inscripcion" step="0.01" value="{{ oferta['COSTO_INSCRIPCION'] }}"></td>
-            <td><input type="number" name="costo_programa" step="0.01" value="{{ oferta['COSTO_PROGRAMA'] }}"></td>
-            <td><input type="text" name="descripcion_oferta" value="{{ oferta['DESCRIPCION_OFERTA'] }}"></td>
+            <td><small>{{ oferta['PROGRAMA_NOMBRE'] }}</small></td>
+            <td><input type="text" name="periodo_academico" value="{{ oferta['PERIODO_ACADEMICO'] }}" style="width: 100px;"></td>
+            <td><input type="text" name="titulo_conduce" value="{{ oferta['TITULO_CONDUCE'] }}" style="width: 120px;"></td>
+            <td><input type="number" name="costo_inscripcion" step="0.01" value="{{ oferta['COSTO_INSCRIPCION'] }}" style="width: 80px;"></td>
+            <td><input type="number" name="costo_programa" step="0.01" value="{{ oferta['COSTO_PROGRAMA'] }}" style="width: 80px;"></td>
+            <td><input type="text" name="descripcion_oferta" value="{{ oferta['DESCRIPCION_OFERTA'] }}" style="width: 150px;"></td>
             <td>
-                <select name="activa">
+                <select name="activa" style="width: 60px;">
                     <option value="S" {% if oferta['ACTIVA'] == 'S' %}selected{% endif %}>Sí</option>
                     <option value="N" {% if oferta['ACTIVA'] == 'N' %}selected{% endif %}>No</option>
                 </select>
             </td>
             <td>
-                <button type="submit">Guardar</button>
+                <select name="requisitos" multiple size="3" style="width: 130px;">
+                    {% for req in requisitos %}
+                        <option value="{{ req['ID_REQUISITO'] }}"
+                            {% if req['ID_REQUISITO'] in oferta_requisitos[oferta['ID_OFERTA']] %}
+                                selected
+                            {% endif %}
+                        >{{ req['NOMBRE_DOC'] }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td style="white-space: nowrap;">
+                <button type="submit" style="padding: 2px 5px;">Guardar</button>
         </form>
         <form action="{{ url_for('admin_manage_offers') }}" method="post" style="display:inline;">
             <input type="hidden" name="action" value="Eliminar">
             <input type="hidden" name="id_oferta" value="{{ oferta['ID_OFERTA'] }}">
-            <button type="submit" onclick="return confirm('¿Estás seguro de eliminar esta oferta?');">Eliminar</button>
+            <button type="submit" onclick="return confirm('¿Estás seguro de eliminar esta oferta?');" style="padding: 2px 5px;">Eliminar</button>
         </form>
             </td>
     </tr>
 {% endfor %}
 </tbody>
 </table>
-<div style="margin-top: 50px; text-align: center;">
+</div>
+
+<div style="margin-top: 30px; text-align: center;">
     {% if session['user_type'] == 'Administrador' %}
-        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary" style="background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Volver al Menú Principal</a>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary" style="background-color: #007bff; color: white; padding: 8px 15px; border-radius: 4px; text-decoration: none;">Volver al Menú Principal</a>
     {% elif session['user_type'] == 'Cliente' %}
-        <a href="{{ url_for('student_dashboard') }}" class="btn btn-primary" style="background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Volver al Menú Principal</a>
+        <a href="{{ url_for('student_dashboard') }}" class="btn btn-primary" style="background-color: #007bff; color: white; padding: 8px 15px; border-radius: 4px; text-decoration: none;">Volver al Menú Principal</a>
     {% endif %}
 </div>
 {% endblock %}

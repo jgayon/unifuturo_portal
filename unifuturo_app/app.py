@@ -679,39 +679,6 @@ def admin_review_documents():
     return render_template('admin/review_documents.html', all_documents=all_documents)
 
 # # Crear oferta académica
-# @app.route('/admin/create_offer', methods=['GET', 'POST'])
-# def admin_create_offer():
-#     if 'user_id' not in session or session['user_type'] != 'Administrador':
-#         flash('Acceso no autorizado.', 'danger')
-#         return redirect(url_for('index'))
-
-#     if request.method == 'POST':
-#         data = {
-#             'id_programa': request.form['id_programa'],
-#             'periodo_academico': request.form['periodo_academico'],
-#             'titulo_conduce': request.form['titulo_conduce'],
-#             'costo_inscripcion': request.form['costo_inscripcion'],
-#             'costo_programa': request.form['costo_programa'],
-#             'activa': request.form['activa'],
-#             'descripcion_oferta': request.form.get('descripcion_oferta', '')  # opcional
-#         }
-
-#         insert_query = '''
-#             INSERT INTO "Oferta" (id_programa, periodo_academico, titulo_conduce,
-#                                   costo_inscripcion, costo_programa, activa, descripcion_oferta)
-#             VALUES (:id_programa, :periodo_academico, :titulo_conduce,
-#                     :costo_inscripcion, :costo_programa, :activa, :descripcion_oferta)
-#         '''
-#         success = execute_query(insert_query, data)
-
-#         if success:
-#             flash('Oferta creada correctamente.', 'success')
-#             return redirect(url_for('admin_dashboard'))
-#         else:
-#             flash('Error al crear la oferta.', 'danger')
-
-#     programas = execute_query('SELECT id_programa, nombre FROM "Programa"', fetchall=True)
-#     return render_template('admin/create_offer.html', programas=programas)
 @app.route('/admin/create_offer', methods=['GET', 'POST'])
 def admin_create_offer():
     if 'user_id' not in session or session['user_type'] != 'Administrador':
@@ -803,7 +770,22 @@ def admin_manage_offers():
                     'activa': activa,
                     'id_oferta': oferta_id
                 })
-                flash('Oferta actualizada.', 'success')
+
+                # Actualizar requisitos asociados
+                nuevos_requisitos = request.form.getlist('requisitos')  # lista de ID_REQUISITO seleccionados
+
+                # Eliminar requisitos actuales
+                execute_query('DELETE FROM "Oferta_Requisito" WHERE id_oferta = :id_oferta', {'id_oferta': oferta_id})
+
+                # Insertar nuevos requisitos
+                for req_id in nuevos_requisitos:
+                    execute_query('''
+                        INSERT INTO "Oferta_Requisito" (id_oferta, id_requisito)
+                        VALUES (:id_oferta, :id_requisito)
+                    ''', {'id_oferta': oferta_id, 'id_requisito': req_id})
+
+                flash('Oferta y requisitos actualizados.', 'success')
+            
             except ValueError:
                 flash('Los campos de costo deben ser números válidos.', 'danger')
         
@@ -817,8 +799,18 @@ def admin_manage_offers():
     FROM "Oferta" o
     JOIN "Programa" p ON o.id_programa = p.id_programa
 ''', fetchall=True)
-    return render_template('admin/manage_offers.html', ofertas=ofertas)
+    requisitos = execute_query('SELECT id_requisito, nombre_doc FROM "Requisitos"', fetchall=True)
 
+    # Obtener requisitos asociados a cada oferta
+    oferta_requisitos = {}
+    for oferta in ofertas:
+        reqs = execute_query('''
+            SELECT id_requisito FROM "Oferta_Requisito" WHERE id_oferta = :id
+        ''', {'id': oferta['ID_OFERTA']}, fetchall=True)
+        oferta_requisitos[oferta['ID_OFERTA']] = [r['ID_REQUISITO'] for r in reqs]
+    return render_template('admin/manage_offers.html', ofertas=ofertas, requisitos=requisitos, oferta_requisitos=oferta_requisitos)
+
+#Editar perfil admin
 @app.route('/admin/edit_profile', methods=['GET', 'POST'])
 def admin_edit_profile():
     print("user_type:", session.get('user_type'))

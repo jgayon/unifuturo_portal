@@ -9,7 +9,19 @@
 <body>
     <header>
         <nav>
-            <a href="{{ url_for('index') }}" class="logo">UNIFUTURO</a>
+            <a href="
+                {% if 'user_id' in session %}
+                    {% if session['user_type'] == 'Administrador' %}
+                        {{ url_for('admin_dashboard') }}
+                    {% elif session['user_type'] == 'Cliente' %}
+                        {{ url_for('student_dashboard') }}
+                    {% else %}
+                        {{ url_for('index') }}
+                    {% endif %}
+                {% else %}
+                    {{ url_for('index') }}
+                {% endif %}
+            " class="logo">UNIFUTURO</a>
             <ul>
                 {% if 'user_id' in session %}
                     <li><span>Bienvenido, {{ session['user_name'] }}</span></li>
