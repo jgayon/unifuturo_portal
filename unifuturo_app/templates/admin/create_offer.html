@@ -33,7 +33,14 @@
     <option value="S">Sí</option>
     <option value="N">No</option>
   </select><br><br>
-
+  <label for="requisitos">Requisitos asociados:</label><br>
+  {% for req in requisitos %}
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="requisitos" value="{{ req['ID_REQUISITO'] }}" id="req{{ req['ID_REQUISITO'] }}">
+      <label class="form-check-label" for="req{{ req['ID_REQUISITO'] }}">{{ req['NOMBRE_DOC'] }}</label>
+    </div>
+  {% endfor %}
+<br>
   <button type="submit">Crear Oferta</button>
 </form>
 <div style="margin-top: 50px; text-align: center;">

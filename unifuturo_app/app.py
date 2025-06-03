@@ -678,12 +678,48 @@ def admin_review_documents():
     all_documents = execute_query(query, fetchall=True)
     return render_template('admin/review_documents.html', all_documents=all_documents)
 
-# Crear oferta académica
+# # Crear oferta académica
+# @app.route('/admin/create_offer', methods=['GET', 'POST'])
+# def admin_create_offer():
+#     if 'user_id' not in session or session['user_type'] != 'Administrador':
+#         flash('Acceso no autorizado.', 'danger')
+#         return redirect(url_for('index'))
+
+#     if request.method == 'POST':
+#         data = {
+#             'id_programa': request.form['id_programa'],
+#             'periodo_academico': request.form['periodo_academico'],
+#             'titulo_conduce': request.form['titulo_conduce'],
+#             'costo_inscripcion': request.form['costo_inscripcion'],
+#             'costo_programa': request.form['costo_programa'],
+#             'activa': request.form['activa'],
+#             'descripcion_oferta': request.form.get('descripcion_oferta', '')  # opcional
+#         }
+
+#         insert_query = '''
+#             INSERT INTO "Oferta" (id_programa, periodo_academico, titulo_conduce,
+#                                   costo_inscripcion, costo_programa, activa, descripcion_oferta)
+#             VALUES (:id_programa, :periodo_academico, :titulo_conduce,
+#                     :costo_inscripcion, :costo_programa, :activa, :descripcion_oferta)
+#         '''
+#         success = execute_query(insert_query, data)
+
+#         if success:
+#             flash('Oferta creada correctamente.', 'success')
+#             return redirect(url_for('admin_dashboard'))
+#         else:
+#             flash('Error al crear la oferta.', 'danger')
+
+#     programas = execute_query('SELECT id_programa, nombre FROM "Programa"', fetchall=True)
+#     return render_template('admin/create_offer.html', programas=programas)
 @app.route('/admin/create_offer', methods=['GET', 'POST'])
 def admin_create_offer():
     if 'user_id' not in session or session['user_type'] != 'Administrador':
         flash('Acceso no autorizado.', 'danger')
         return redirect(url_for('index'))
+
+    programas = execute_query('SELECT id_programa, nombre FROM "Programa"', fetchall=True)
+    requisitos = execute_query('SELECT id_requisito, nombre_doc FROM "Requisitos"', fetchall=True)
 
     if request.method == 'POST':
         data = {
@@ -693,7 +729,7 @@ def admin_create_offer():
             'costo_inscripcion': request.form['costo_inscripcion'],
             'costo_programa': request.form['costo_programa'],
             'activa': request.form['activa'],
-            'descripcion_oferta': request.form.get('descripcion_oferta', '')  # opcional
+            'descripcion_oferta': request.form.get('descripcion_oferta', '')
         }
 
         insert_query = '''
@@ -705,13 +741,28 @@ def admin_create_offer():
         success = execute_query(insert_query, data)
 
         if success:
-            flash('Oferta creada correctamente.', 'success')
+            # Obtener el ID de la nueva oferta
+            nueva = execute_query(
+                'SELECT MAX(id_oferta) AS id FROM "Oferta" WHERE id_programa = :prog AND periodo_academico = :periodo',
+                {'prog': data['id_programa'], 'periodo': data['periodo_academico']},
+                fetchone=True
+            )
+            id_oferta = nueva['ID']
+
+            # Insertar requisitos seleccionados
+            requisitos_seleccionados = request.form.getlist('requisitos')
+            for req_id in requisitos_seleccionados:
+                execute_query('''
+                    INSERT INTO "Oferta_Requisito" (id_oferta, id_requisito)
+                    VALUES (:oferta, :requisito)
+                ''', {'oferta': id_oferta, 'requisito': req_id})
+
+            flash('Oferta y requisitos creados correctamente.', 'success')
             return redirect(url_for('admin_dashboard'))
         else:
             flash('Error al crear la oferta.', 'danger')
 
-    programas = execute_query('SELECT id_programa, nombre FROM "Programa"', fetchall=True)
-    return render_template('admin/create_offer.html', programas=programas)
+    return render_template('admin/create_offer.html', programas=programas, requisitos=requisitos)
 
 # Gestionar todas las ofertas: ver, editar, eliminar
 @app.route('/admin/manage_offers', methods=['GET', 'POST'])
