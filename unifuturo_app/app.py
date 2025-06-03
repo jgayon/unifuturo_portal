@@ -223,9 +223,9 @@ def create_enrollment_step1():
         return redirect('/login')
 
     periodos = execute_query(
-        'SELECT DISTINCT periodo_academico FROM "Oferta" WHERE activa = \'S\' ORDER BY periodo_academico DESC',
-        fetchall=True
-    )
+    'SELECT DISTINCT periodo_academico FROM "Oferta" WHERE activa = \'S\' ORDER BY periodo_academico DESC',
+    fetchall=True
+    ) or []
 
     selected_periodo = request.form.get('periodo_academico')
     ofertas = []
@@ -248,6 +248,7 @@ def create_enrollment_step1():
 
     return render_template('enrollment/select_offer.html', periodos=periodos, selected_periodo=selected_periodo, ofertas=ofertas)
 
+
 @app.route('/create_enrollment_step2', methods=['GET', 'POST'])
 def create_enrollment_step2():
     if 'user_id' not in session:
@@ -257,38 +258,51 @@ def create_enrollment_step2():
     oferta_id = request.args.get('oferta_id') or request.form.get('oferta_id')
     tipo_prospecto = request.args.get('tipo_prospecto') or request.form.get('tipo_prospecto')
 
+    # Obtener requisitos de la oferta
     requisitos = execute_query('''
-        SELECT r.id_requisito, r.nombre_requisito
+        SELECT r.id_requisito, r.nombre_doc
         FROM "Oferta_Requisito" orq
         JOIN "Requisitos" r ON orq.id_requisito = r.id_requisito
-        WHERE orq.id_oferta = :id_oferta
-    ''', {'id_oferta': oferta_id}, fetchall=True)
+        WHERE orq.id_oferta = :OFERTA_ID
+    ''', {'OFERTA_ID': oferta_id}, fetchall=True)
 
     if request.method == 'POST' and 'inscribirse' in request.form:
-        # Verificar inscripción existente
+        # Verificar si ya está inscrito
         ya_inscrito = execute_query(
-            'SELECT COUNT(*) AS cantidad FROM "Inscripcion" WHERE id_usuario = :uid AND id_oferta = :oid',
-            {'uid': user_id, 'oid': oferta_id}, fetchone=True
+            '''
+            SELECT COUNT(*) AS cantidad FROM "Inscripcion"
+            WHERE id_usuario = :USER_ID AND id_oferta = :OFERTA_ID
+            ''',
+            {'USER_ID': user_id, 'OFERTA_ID': oferta_id},
+            fetchone=True
         )
 
         if ya_inscrito and ya_inscrito['CANTIDAD'] > 0:
             flash('Ya tienes una inscripción para esta oferta.', 'warning')
         else:
+            # Insertar inscripción
             execute_query('''
                 INSERT INTO "Inscripcion" (id_usuario, id_oferta, tipo_prospecto, fecha_inscripcion, estado_inscripcion)
-                VALUES (:uid, :oid, :tp, SYSDATE, 'En progreso')
+                VALUES (:USER_ID, :OFERTA_ID, :TIPO_PROSPECTO, SYSDATE, 'En progreso')
             ''', {
-                'uid': user_id,
-                'oid': oferta_id,
-                'tp': tipo_prospecto
+                'USER_ID': user_id,
+                'OFERTA_ID': oferta_id,
+                'TIPO_PROSPECTO': tipo_prospecto
             })
 
+            # Obtener ID de la inscripción recién creada
             insc = execute_query('''
-                SELECT MAX(id_inscripcion) AS id FROM "Inscripcion"
-                WHERE id_usuario = :uid AND id_oferta = :oid
-            ''', {'uid': user_id, 'oid': oferta_id}, fetchone=True)
+                SELECT MAX(id_inscripcion) AS ID
+                FROM "Inscripcion"
+                WHERE id_usuario = :USER_ID AND id_oferta = :OFERTA_ID
+            ''', {
+                'USER_ID': user_id,
+                'OFERTA_ID': oferta_id
+            }, fetchone=True)
+
             id_inscripcion = insc['ID']
 
+            # Subida de documentos
             for req in requisitos:
                 file = request.files.get(f'doc_{req["id_requisito"]}')
                 if file and file.filename:
@@ -297,20 +311,24 @@ def create_enrollment_step2():
                     file.save(ruta)
                     execute_query('''
                         INSERT INTO "Documentos" (id_inscripcion, id_requisito, nombre_archivo, ruta_archivo, tipo_mime)
-                        VALUES (:iid, :rid, :fname, :ruta, :mime)
+                        VALUES (:INS_ID, :REQ_ID, :FILENAME, :RUTA, :MIME)
                     ''', {
-                        'iid': id_inscripcion,
-                        'rid': req['id_requisito'],
-                        'fname': filename,
-                        'ruta': ruta,
-                        'mime': file.content_type
+                        'INS_ID': id_inscripcion,
+                        'REQ_ID': req['id_requisito'],
+                        'FILENAME': filename,
+                        'RUTA': ruta,
+                        'MIME': file.content_type
                     })
 
             flash('Inscripción realizada y documentos guardados.', 'success')
             return redirect('/student_dashboard')
 
-    return render_template('enrollment/upload_documents.html', requisitos=requisitos, oferta_id=oferta_id, tipo_prospecto=tipo_prospecto)
-
+    return render_template(
+        'enrollment/upload_documents.html',
+        requisitos=requisitos,
+        oferta_id=oferta_id,
+        tipo_prospecto=tipo_prospecto
+    )
 
 #Ver inscripciones
 @app.route('/student/view_enrollments')
